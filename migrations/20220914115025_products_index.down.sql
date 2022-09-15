@@ -1,0 +1,1 @@
+ALTER TABLE products add COLUMN `index` INTEGER;
