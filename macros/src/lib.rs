@@ -62,6 +62,23 @@ pub fn derive_from_struct(input: TokenStream) -> TokenStream {
         table_name, fields_list, values
     );
 
+    let update_fields = fields
+        .iter()
+        .filter(|&field| field.ident.clone().map(|value| value.to_string()) != Some("id".into()))
+        .enumerate()
+        .map(|(i, field)| format!("{} = ${}", &field.ident.clone().unwrap(), i + 2)).collect::<Vec<String>>().join(", ");
+
+
+    let update_sql = format!(
+        "update `{}` set {} where id = $1",
+        table_name, update_fields
+    );
+
+    let fields_for_update = fields
+        .iter()
+        .filter(|&field| field.ident.clone().map(|value| value.to_string()) != Some("id".into()))
+        .map(|field| &field.ident);
+
     let insert_or_ignore_sql = format!(
         "insert or ignore into `{}` ( {} ) values ( {} )",
         table_name, fields_list, values
@@ -97,6 +114,22 @@ pub fn derive_from_struct(input: TokenStream) -> TokenStream {
                     ).execute(pool)
                     .await?
                 )
+            }
+
+            pub async fn insert_or_update(&self, pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
+                let result = sqlx::query!(#update_sql,
+                    self.id,
+                #(
+                    self.#fields_for_update,
+                )*
+                    ).execute(pool)
+                    .await?;
+                
+                if result.rows_affected() > 0 {
+                    return Ok(result);
+                }
+
+                self.insert(pool).await
             }
 
             pub async fn insert_or_ignore(&self, pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {

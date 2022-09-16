@@ -1,4 +1,3 @@
-
 use serde::Serialize;
 
 #[derive(macros::Entity)]
@@ -26,6 +25,7 @@ pub struct Picture {
     pub original_size: PictureSize,
     pub crop: Crop,
     #[serde(skip_serializing)]
+    #[graphql(skip)]
     pub product_id: Option<String>,
 }
 
@@ -73,6 +73,23 @@ impl From<&Picture> for Entity {
             crop_anchor_y: pic.crop.anchor.y,
             crop_factor: pic.crop.factor,
             product_id: pic.product_id.clone(),
+        }
+    }
+}
+
+
+#[cfg(test)]
+impl Entity {
+    pub fn mock() -> Self {
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            color: "#000000".into(),
+            original_size_width: 100,
+            original_size_height: 100,
+            crop_anchor_x: 0.5,
+            crop_anchor_y: 0.5,
+            crop_factor: 1.0,
+            product_id: None,
         }
     }
 }

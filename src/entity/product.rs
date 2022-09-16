@@ -1,4 +1,8 @@
-use super::multi_lang::MultiLang;
+use async_graphql::{ComplexObject, Context, Result};
+use serde::Serialize;
+use sqlx::SqlitePool;
+
+use super::{multi_lang::MultiLang, picture::Picture};
 
 #[derive(macros::Entity)]
 #[table_name = "products"]
@@ -16,6 +20,7 @@ pub struct Entity {
 
 
 #[derive(async_graphql::SimpleObject)]
+#[graphql(complex)]
 pub struct Product {
     pub id: String,
     pub cover_id: Option<String>,
@@ -24,6 +29,14 @@ pub struct Product {
     pub show_in_shop: bool,
     pub price: Option<i64>,
     pub description: MultiLang,
+}
+
+#[ComplexObject]
+impl Product {
+    async fn pictures(&self, ctx: &Context<'_>) -> Result<Vec<Picture>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        Ok(Picture::get_by_product_id(db, &self.id).await.unwrap())
+    }
 }
 
 impl From<&Entity> for Product {
@@ -46,7 +59,7 @@ impl From<&Entity> for Product {
     }
 }
 
-#[derive(async_graphql::InputObject)]
+#[derive(async_graphql::InputObject, Serialize, Clone)]
 pub struct ProductInput {
     pub id: String,
     pub pictures: Vec<String>,
@@ -58,18 +71,57 @@ pub struct ProductInput {
     pub description: MultiLang,
 }
 
-impl From<ProductInput> for Entity {
-    fn from(input: ProductInput) -> Self {
+impl From<&ProductInput> for Entity {
+    fn from(input: &ProductInput) -> Self {
         Self {
-            id: input.id,
-            title_en: input.title.en,
-            title_ru: input.title.ru,
-            description_en: input.description.en,
-            description_ru: input.description.ru,
+            id: input.id.clone(),
+            title_en: input.title.en.clone(),
+            title_ru: input.title.ru.clone(),
+            description_en: input.description.en.clone(),
+            description_ru: input.description.ru.clone(),
             price: input.price,
             show_in_gallery: input.show_in_gallery,
             show_in_shop: input.show_in_shop,
-            cover_id: input.cover_id,
+            cover_id: input.cover_id.clone(),
+        }
+    }
+}
+
+#[cfg(test)]
+impl ProductInput {
+    pub fn mock() -> Self {
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            pictures: vec!["bc1e6f801c0a2657af7eeb23638fd5b8".to_string()],
+            cover_id: None,
+            title: MultiLang {
+                en: "title".to_string(),
+                ru: "заголовок".to_string(),
+            },
+            show_in_gallery: true,
+            show_in_shop: false,
+            price: None,
+            description: MultiLang {
+                en: "description".to_string(),
+                ru: "описание".to_string(),
+            },
+        }
+    }
+}
+
+#[cfg(test)]
+impl Entity {
+    pub fn mock() -> Self {
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            cover_id: None,
+            title_en: "title".to_string(),
+            title_ru: "заголовок".to_string(),
+            description_en: "description".to_string(),
+            description_ru: "описание".to_string(),
+            price: None,
+            show_in_gallery: true,
+            show_in_shop: false,
         }
     }
 }
