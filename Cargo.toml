@@ -27,6 +27,8 @@ rayon = "1.5.3"
 dominant_color = "0.3.0"
 serde_json = "1.0.85"
 serde = { version = "1.0.144", features = ["serde_derive"] }
+markdown = "0.3.0"
+markdown_to_text = '1.0'
 
 [dev-dependencies]
 assert-json-diff = "2.0.2"

@@ -77,6 +77,21 @@ impl From<&Picture> for Entity {
     }
 }
 
+impl Picture {
+    pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &str) -> sqlx::Result<Vec<Self>> {
+        let rows = sqlx::query_as!(Entity, "select * from pictures where product_id = ?", id)
+            .fetch_all(db)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|row| row.into())
+            .collect::<Vec<Self>>();
+
+        Ok(rows)
+    }
+}
+
+
 
 #[cfg(test)]
 impl Entity {

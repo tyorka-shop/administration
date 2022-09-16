@@ -1,8 +1,6 @@
-use async_graphql::{ComplexObject, Context, Result};
+use super::multi_lang::MultiLang;
+use async_graphql::Result;
 use serde::Serialize;
-use sqlx::SqlitePool;
-
-use super::{multi_lang::MultiLang, picture::Picture};
 
 #[derive(macros::Entity)]
 #[table_name = "products"]
@@ -18,7 +16,6 @@ pub struct Entity {
     pub show_in_shop: bool,
 }
 
-
 #[derive(async_graphql::SimpleObject)]
 #[graphql(complex)]
 pub struct Product {
@@ -29,14 +26,6 @@ pub struct Product {
     pub show_in_shop: bool,
     pub price: Option<i64>,
     pub description: MultiLang,
-}
-
-#[ComplexObject]
-impl Product {
-    async fn pictures(&self, ctx: &Context<'_>) -> Result<Vec<Picture>> {
-        let db = ctx.data::<SqlitePool>().unwrap();
-        Ok(Picture::get_by_product_id(db, &self.id).await.unwrap())
-    }
 }
 
 impl From<&Entity> for Product {

@@ -1,17 +1,27 @@
-use sqlx::{query_as, Result, SqlitePool};
+use async_graphql::{ComplexObject, Context};
+use sqlx::{Result, SqlitePool};
 
-use crate::entity::picture::{Entity, Picture};
+use crate::entity::{multi_lang::MultiLang, picture::Picture, product::Product};
 
-impl Picture {
-    pub async fn get_by_product_id(db: &SqlitePool, id: &str) -> Result<Vec<Self>> {
-        let rows = query_as!(Entity, "select * from pictures where product_id = ?", id)
-            .fetch_all(db)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(|row| row.into())
-            .collect::<Vec<Self>>();
+#[ComplexObject]
+impl Product {
+    async fn pictures(&self, ctx: &Context<'_>) -> Result<Vec<Picture>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        Ok(Picture::get_by_product_id(db, &self.id).await.unwrap())
+    }
 
-        Ok(rows)
+    #[allow(non_snake_case)]
+    async fn description_HTML(&self) -> MultiLang {
+        MultiLang {
+            en: markdown::to_html(&self.description.en),
+            ru: markdown::to_html(&self.description.ru),
+        }
+    }
+
+    pub async fn description_text(&self) -> MultiLang {
+        MultiLang {
+            en: markdown_to_text::convert(&self.description.en),
+            ru: markdown_to_text::convert(&self.description.ru),
+        }
     }
 }

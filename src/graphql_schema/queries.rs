@@ -219,4 +219,39 @@ mod products {
             })
         );
     }
+
+    #[tokio::test]
+    pub async fn description() {
+        let db = setup_db().await.unwrap();
+
+        let mut product = Entity::mock();
+
+        product.description_en = "This was ~~erased~~ *deleted*.".to_string();
+
+        product.insert(&db).await.unwrap();
+
+        let query = r#"query Product($id: String!) { product(id: $id) { descriptionText { en } descriptionHTML { en } } }"#;
+
+        let vars = Variables::from_json(serde_json::json!({ "id": product.id }));
+        let r = Request::new(query).variables(vars);
+
+        let result = request(r, &db).await;
+
+        assert_eq!(result.errors.first(), None);
+
+        assert_json_include!(
+            expected: result.data.into_json().unwrap(),
+            actual: serde_json::json!({
+                "product": {
+                    "descriptionText": {
+                        "en": "This was  deleted."
+                    },
+                    "descriptionHTML": {
+                        "en": "<p>This was ~~erased~~ <em>deleted</em>.</p>\n"
+                    }
+                }
+            })
+        );
+    }
+
 }
