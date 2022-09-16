@@ -33,11 +33,13 @@ impl Mutations {
 
         entity.insert_or_update(db).await?;
 
-        for picture in product.pictures {
+        for (i, picture_id) in product.pictures.iter().enumerate() {
+            let index = i.to_string();
             sqlx::query!(
-                "update pictures set product_id = ? where id = ?",
+                "update pictures set product_id = $1, `idx` = $2 where id = $3",
                 product.id,
-                picture
+                index,
+                picture_id
             )
             .execute(db)
             .await?;
@@ -52,7 +54,7 @@ mod save_product {
     use crate::entity::product::ProductInput;
 
     use super::Mutations;
-    use async_graphql::{EmptySubscription, Object, Request, Result, Variables, InputType};
+    use async_graphql::{EmptySubscription, InputType, Object, Request, Result, Variables};
     use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 
     struct Queries;
@@ -76,16 +78,15 @@ mod save_product {
         Ok(db)
     }
 
-    fn make_request(product: &ProductInput) -> Request{
-
+    fn make_request(product: &ProductInput) -> Request {
         let vars = Variables::from_json(serde_json::json!({ "product": product.to_value() }));
-    
+
         let mutation = r#"
             mutation AddProduct($product: ProductInput!) {
                 saveProduct(product: $product) { id }
             }
         "#;
-    
+
         Request::new(mutation).variables(vars)
     }
 
@@ -180,17 +181,17 @@ mod save_product {
     pub async fn update() {
         let schema = async_graphql::Schema::build(Queries, Mutations, EmptySubscription).finish();
         let db = setup_db().await.unwrap();
-        
+
         let mut product = ProductInput::mock();
 
         let request = make_request(&product).data(db.clone());
 
         // create
         schema.execute(request).await;
-        
+
         product.title.en = "New title".into();
         let request = make_request(&product).data(db.clone());
-        
+
         // update
         let result = schema.execute(request).await;
 
@@ -204,9 +205,6 @@ mod save_product {
             .await
             .unwrap();
 
-        assert_eq!(
-            row.title_en,
-            "New title"
-        );
+        assert_eq!(row.title_en, "New title");
     }
 }

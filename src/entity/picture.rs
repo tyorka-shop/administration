@@ -11,6 +11,7 @@ pub struct Entity {
     pub crop_anchor_y: f64,
     pub crop_factor: f64,
     pub product_id: Option<String>,
+    pub idx: Option<i64>,
 }
 
 use super::{
@@ -73,13 +74,14 @@ impl From<&Picture> for Entity {
             crop_anchor_y: pic.crop.anchor.y,
             crop_factor: pic.crop.factor,
             product_id: pic.product_id.clone(),
+            idx: None,
         }
     }
 }
 
 impl Picture {
     pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &str) -> sqlx::Result<Vec<Self>> {
-        let rows = sqlx::query_as!(Entity, "select * from pictures where product_id = ?", id)
+        let rows = sqlx::query_as!(Entity, "select * from pictures where product_id = ? order by `idx`", id)
             .fetch_all(db)
             .await
             .unwrap()
@@ -105,6 +107,7 @@ impl Entity {
             crop_anchor_y: 0.5,
             crop_factor: 1.0,
             product_id: None,
+            idx: None,
         }
     }
 }

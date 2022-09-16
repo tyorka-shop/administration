@@ -1,0 +1,1 @@
+alter table pictures add column `idx` INTEGER;
