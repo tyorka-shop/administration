@@ -1,5 +1,4 @@
-use crate::graphql_types::{Crop, Picture};
-use image_processing::Image;
+use crate::image_storage::ImageStorage;
 use poem::{
     handler,
     http::StatusCode,
@@ -8,12 +7,10 @@ use poem::{
 };
 use sqlx::SqlitePool;
 
-const SIZES: &[u32] = &[200, 600, 2000];
-
 #[handler]
 pub async fn handler(
-    Data(cfg): Data<&config::Config>,
     Data(db): Data<&SqlitePool>,
+    Data(images): Data<&ImageStorage>,
     mut multipart: Multipart,
 ) -> Response {
     while let Ok(Some(field)) = multipart.next_field().await {
@@ -29,22 +26,7 @@ pub async fn handler(
                 bytes.len()
             );
 
-            let img = Image::new(&bytes).unwrap();
-
-            let (w, h) = img.size();
-            let crop: Crop = image_processing::Crop::default_square(w, h).into();
-
-            img.save(&cfg.images_folder, SIZES.into()).unwrap();
-
-            let (w, h) = img.size();
-
-            let pic = Picture::new(
-                &img.id(),
-                w as i64,
-                h as i64,
-                img.dominant_color().as_ref(),
-                &crop,
-            );
+            let pic = images.create(&bytes).unwrap();
 
             entity::Picture::from(&pic)
                 .insert_or_ignore(db)

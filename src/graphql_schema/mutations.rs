@@ -1,7 +1,10 @@
-use async_graphql::{Context, Object, Result};
+use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
 
-use crate::graphql_types::{Product, ProductInput};
+use crate::{
+    graphql_types::{Crop, Picture, Product, ProductInput},
+    image_storage::ImageStorage,
+};
 
 pub struct Mutations;
 
@@ -43,6 +46,24 @@ impl Mutations {
         }
 
         Ok(Product::from(&entity))
+    }
+
+    async fn save_crop<'a>(&self, ctx: &Context<'a>, id: ID, crop: Crop) -> Result<Picture> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let images = ctx.data::<ImageStorage>().unwrap();
+
+        let row = entity::Picture::get_by_id(&db, &id).await.unwrap();
+
+        images.recrop(&row.id, &crop.clone().into()).unwrap();
+
+        let mut pic = Picture::from(row);
+        pic.crop = crop.into();
+        entity::Picture::from(&pic)
+            .insert_or_update(db)
+            .await
+            .unwrap();
+
+        Ok(pic)
     }
 }
 

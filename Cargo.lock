@@ -381,7 +381,6 @@ dependencies = [
  "confy",
  "rand",
  "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -571,7 +570,6 @@ checksum = "f2fb860ca6fafa5552fb6d0e816a69c8e49f0908bf524e30a90d97c85892d506"
 dependencies = [
  "block-buffer",
  "crypto-common",
- "subtle",
 ]
 
 [[package]]
@@ -644,37 +642,13 @@ dependencies = [
 name = "entity"
 version = "0.1.0"
 dependencies = [
- "assert-json-diff",
- "async-graphql",
- "async-graphql-poem",
- "async-trait",
- "cache",
- "chrono",
- "constant_time_eq",
- "dominant_color",
- "env_logger 0.9.0",
  "eyre",
- "futures",
- "hex",
- "image",
- "insta",
- "log",
  "macros",
- "markdown",
- "markdown_to_text",
  "md5",
- "poem",
- "rayon",
  "reqwest",
  "serde",
- "serde_json",
- "serde_qs",
- "session_service_grpc",
  "sqlx",
- "sqlxinsert",
  "tokio",
- "tokio_schedule",
- "uuid",
 ]
 
 [[package]]
@@ -1046,24 +1020,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
-name = "hkdf"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "791a029f6b9fc27657f6f188ec6e5e43f6911f6f878e0dc5501396e09809d437"
-dependencies = [
- "hmac",
-]
-
-[[package]]
-name = "hmac"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
-dependencies = [
- "digest",
-]
-
-[[package]]
 name = "http"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1220,34 +1176,12 @@ dependencies = [
 name = "image_processing"
 version = "0.1.0"
 dependencies = [
- "async-graphql",
- "async-graphql-poem",
- "async-trait",
- "cache",
- "chrono",
- "constant_time_eq",
  "dominant_color",
- "env_logger 0.9.0",
- "eyre",
- "futures",
- "hex",
  "image",
  "log",
- "markdown",
- "markdown_to_text",
  "md5",
- "poem",
  "rayon",
- "reqwest",
  "serde",
- "serde_json",
- "serde_qs",
- "session_service_grpc",
- "sqlx",
- "sqlxinsert",
- "tokio",
- "tokio_schedule",
- "uuid",
 ]
 
 [[package]]
@@ -1437,15 +1371,6 @@ name = "matchit"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73cbba799671b762df5a175adf59ce145165747bb891505c43d09aefbbf38beb"
-
-[[package]]
-name = "md-5"
-version = "0.10.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66b48670c893079d3c2ed79114e3644b7004df1c361a4e0ad52e2e6940d07c3d"
-dependencies = [
- "digest",
-]
 
 [[package]]
 name = "md5"
@@ -2389,13 +2314,11 @@ checksum = "8c21d3b5e7cadfe9ba7cdc1295f72cc556c750b4419c27c219c0693198901f8e"
 dependencies = [
  "ahash",
  "atoi",
- "base64 0.13.0",
  "bitflags",
  "byteorder",
  "bytes 1.2.1",
  "crc",
  "crossbeam-queue",
- "dirs",
  "dotenvy",
  "either",
  "event-listener",
@@ -2407,24 +2330,17 @@ dependencies = [
  "futures-util",
  "hashlink",
  "hex",
- "hkdf",
- "hmac",
  "indexmap",
  "itoa",
  "libc",
  "libsqlite3-sys",
  "log",
- "md-5",
  "memchr",
  "once_cell",
  "paste",
  "percent-encoding",
- "rand",
  "rustls",
  "rustls-pemfile",
- "serde",
- "serde_json",
- "sha-1",
  "sha2",
  "smallvec",
  "sqlformat",
@@ -2434,7 +2350,6 @@ dependencies = [
  "tokio-stream",
  "url",
  "webpki-roots",
- "whoami",
 ]
 
 [[package]]
@@ -2468,19 +2383,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sqlxinsert"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf7c958f1f919dbd3d0d28e3b16eb13b52b4a953406b63cbe036a13986f52366"
-dependencies = [
- "async-trait",
- "eyre",
- "quote",
- "sqlx",
- "syn",
-]
-
-[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2501,12 +2403,6 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
-
-[[package]]
-name = "subtle"
-version = "2.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
@@ -2750,16 +2646,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tokio_schedule"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b91f371e5032da918342685fde2ca040710d38aaec985378e121055fbf031e9"
-dependencies = [
- "chrono",
- "tokio",
-]
-
-[[package]]
 name = "toml"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2963,8 +2849,6 @@ dependencies = [
  "entity",
  "env_logger 0.9.0",
  "eyre",
- "futures",
- "hex",
  "image",
  "image_processing",
  "insta",
@@ -2975,16 +2859,11 @@ dependencies = [
  "md5",
  "poem",
  "rayon",
- "reqwest",
  "serde",
  "serde_json",
- "serde_qs",
  "session_service_grpc",
  "sqlx",
- "sqlxinsert",
  "tokio",
- "tokio_schedule",
- "uuid",
 ]
 
 [[package]]
@@ -3245,17 +3124,6 @@ dependencies = [
  "either",
  "libc",
  "once_cell",
-]
-
-[[package]]
-name = "whoami"
-version = "1.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd9fa466115c4a3fadac4119e0f6182f0ef5c5356cddb0b0b5de09b87369f15"
-dependencies = [
- "bumpalo",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]

@@ -3,8 +3,12 @@ mod graphql_types;
 mod graphql_schema;
 mod guard;
 mod web;
+mod image_storage;
 
 use sqlx::sqlite::SqlitePoolOptions;
+use image_storage::ImageStorage;
+
+pub const PIC_SIZES: &[u32] = &[200, 600, 2000];
 
 #[tokio::main]
 async fn main() {
@@ -17,21 +21,11 @@ async fn main() {
         .await
         .unwrap();
 
-    init_store(&cfg.images_folder).unwrap();
+    let images = ImageStorage::new(&cfg.images_folder, PIC_SIZES.into()).unwrap();
 
-    let web = web::make_server(cfg.clone(), db);
+    let web = web::make_server(cfg.clone(), db, images);
 
     let result = tokio::join!(web.await);
 
     println!("result: {:?}", result);
-}
-
-fn init_store(path: &str) -> std::io::Result<()> {
-    match std::fs::create_dir_all(path) {
-        Ok(_) => Ok(()),
-        Err(e) => match e.kind() {
-            std::io::ErrorKind::AlreadyExists => Ok(()),
-            _ => Err(e),
-        },
-    }
 }

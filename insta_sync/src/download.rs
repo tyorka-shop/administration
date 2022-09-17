@@ -14,7 +14,7 @@ async fn download(url: &str, to_folder: &str) -> Image {
 
     let img = Image::new(&bytes).unwrap();
 
-    img.save(to_folder, SIZES.into()).unwrap();
+    img.save(to_folder, &SIZES.into()).unwrap();
     img
 }
 

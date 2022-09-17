@@ -10,7 +10,6 @@ mod user;
 pub use product::{Product, ProductInput};
 pub use picture::Picture;
 pub use crop::Crop;
-pub use picture_size::PictureSize;
 pub use blog_post::BlogPost;
 pub use multi_lang::MultiLang;
 pub use user::User;

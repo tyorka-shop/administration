@@ -4,38 +4,31 @@ name = "tyorka-admin"
 version = "0.1.0"
 
 [dependencies]
-log = "0.4.17"
-env_logger = "0.9.0"
-tokio = "1.20.1"
-uuid = { version = "1.1.2", features = ["v4"] }
-sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "sqlite" ] }
-config = { path = "./config" }
-session_service_grpc = { git = "https://github.com/tyorka-shop/session-service-grpc.git" }
-cache = {git = "https://github.com/tyorka-shop/cache.git"}
-sqlxinsert = "0.6.0"
-eyre = "0.6.8"
 async-graphql = "4.0.13"
-async-trait = "0.1.57"
-poem = { version = "1.3.42", features = ["multipart"] }
 async-graphql-poem = "4.0.13"
+async-trait = "0.1.57"
+cache = {git = "https://github.com/tyorka-shop/cache.git"}
+chrono = "0.4.22"
+config = { path = "./config" }
 constant_time_eq = "0.2.4"
-macros = { path = "./macros" }
-hex = "0.4.3"
-image = "0.24.3"
-md5 = "0.7.0"
-rayon = "1.5.3"
 dominant_color = "0.3.0"
-serde_json = "1.0.85"
-serde = { version = "1.0.144", features = ["serde_derive"] }
+entity = { path = "./entity" }
+env_logger = "0.9.0"
+eyre = "0.6.8"
+image = "0.24.3"
+image_processing = { path = "./image_processing" }
+log = "0.4.17"
+macros = { path = "./macros" }
 markdown = "0.3.0"
 markdown_to_text = '1.0'
-serde_qs = "0.10.1"
-reqwest = { version = "0.11.11", features = ["json"] }
-futures = "0.3.24"
-tokio_schedule = "0.3.0"
-chrono = "0.4.22"
-entity = { path = "./entity" }
-image_processing = { path = "./image_processing" }
+md5 = "0.7.0"
+poem = { version = "1.3.42", features = ["multipart"] }
+rayon = "1.5.3"
+serde = { version = "1.0.144", features = ["serde_derive"] }
+serde_json = "1.0.85"
+session_service_grpc = { git = "https://github.com/tyorka-shop/session-service-grpc.git" }
+sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "sqlite" ] }
+tokio = "1.20.1"
 
 [dev-dependencies]
 assert-json-diff = "2.0.2"

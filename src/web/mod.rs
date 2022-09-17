@@ -8,11 +8,12 @@ use std::{
     net::{Ipv4Addr, SocketAddr},
 };
 
-use crate::{graphql_schema::build_schema, guard::RoleExctractor};
+use crate::{graphql_schema::build_schema, guard::RoleExctractor, image_storage::ImageStorage};
 
 pub async fn make_server(
     cfg: config::Config,
     db: SqlitePool,
+    images: ImageStorage
 ) -> impl Future<Output = Result<(), std::io::Error>> {
     let schema = build_schema().finish();
 
@@ -27,7 +28,8 @@ pub async fn make_server(
         .data(schema)
         .data(extractor)
         .data(db)
-        .data(cfg);
+        .data(cfg)
+        .data(images);
 
     log::info!("GraphQL listening on {}", port);
     Server::new(TcpListener::bind(addr)).run(app)

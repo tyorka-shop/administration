@@ -1,9 +1,12 @@
 
+use crate::Crop;
+
 use super::region::{CropError, Region};
 use image::{imageops::FilterType::Lanczos3, DynamicImage, ImageOutputFormat};
 use rayon::prelude::*;
 use std::path::Path;
 use std::{fs::File, result::Result};
+
 const EXT: &str = "jpg";
 
 #[derive(Clone)]
@@ -18,6 +21,16 @@ impl Image {
 
         Ok(Self {
             id: format!("{:x}", md5::compute(bytes)),
+            img,
+        })
+    }
+
+    pub fn from_file(path: &str, id: &str) -> std::io::Result<Self> {
+        let filename = format!("{}/{}.jpg", &path, &id);
+        let img = image::open(&filename).unwrap();
+
+        Ok(Self {
+            id: id.to_string(),
             img,
         })
     }
@@ -70,7 +83,31 @@ impl Image {
         format!("#{:02x}{:02x}{:02x}", colors[0], colors[1], colors[2])
     }
 
-    pub fn save(self: &Self, path: &str, sizes: Vec<u32>) -> std::io::Result<()> {
+    fn save_variants(&self, path: &str, sizes: &[u32], crop: &Crop) -> std::io::Result<()> {
+        sizes
+            .par_iter()
+            .map(move |height| {
+                let mut variant = self.clone();
+
+                variant.resize(*height);
+
+                variant.do_save(&format!("{path}/{}_{height}.{EXT}", &self.id)).unwrap();
+
+                let (w, h) = variant.size();
+
+                let region = Region::from_size(w, h).crop(crop).unwrap();
+
+                variant.crop(&region).unwrap();
+
+                variant.do_save(&format!("{path}/{}_square_{height}.{EXT}", &self.id))
+                    .unwrap();
+            })
+            .collect::<Vec<_>>();
+
+        Ok(())
+    }
+
+    pub fn save(self: &Self, path: &str, sizes: &Vec<u32>) -> std::io::Result<()> {
         let filename = format!("{path}/{}.{EXT}", &self.id);
 
         log::debug!("Processing file {:?}", &filename);
@@ -84,25 +121,15 @@ impl Image {
         
         let (w, h) = self.size();
 
-        let square = Region::from_size(w, h).get_center_square();
+        let center = Crop::default_square(w, h);
 
-        sizes
-            .par_iter()
-            .map(move |height| {
-                let mut variant = self.clone();
+        self.save_variants(path, &sizes, &center).unwrap();
 
-                variant.resize(*height);
+        Ok(())
+    }
 
-                variant.do_save(&format!("{path}/{}_{height}.{EXT}", &self.id)).unwrap();
-
-
-
-                variant.crop(&square).unwrap();
-
-                variant.do_save(&format!("{path}/{}_square_{height}.{EXT}", &self.id))
-                    .unwrap();
-            })
-            .collect::<Vec<_>>();
+    pub fn recrop(&self, path: &str, sizes: Vec<u32>, crop: &Crop) -> std::io::Result<()> {
+        self.save_variants(path, &sizes, &crop).unwrap();
 
         Ok(())
     }
