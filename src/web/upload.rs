@@ -1,4 +1,5 @@
-use crate::entity::picture::{Entity, Picture};
+use crate::graphql_types::{Crop, Picture};
+use image_processing::Image;
 use poem::{
     handler,
     http::StatusCode,
@@ -6,6 +7,8 @@ use poem::{
     Response,
 };
 use sqlx::SqlitePool;
+
+const SIZES: &[u32] = &[200, 600, 2000];
 
 #[handler]
 pub async fn handler(
@@ -21,11 +24,32 @@ pub async fn handler(
         };
 
         if let Ok(bytes) = field.bytes().await {
-            log::debug!("name={name:?} filename={file_name} length={}", bytes.len());
+            log::debug!(
+                "Uploaded name={name:?} filename={file_name} length={}",
+                bytes.len()
+            );
 
-            let pic = Picture::create(&bytes, &cfg.images_folder).unwrap();
+            let img = Image::new(&bytes).unwrap();
 
-            Entity::from(&pic).insert_or_ignore(db).await.unwrap();
+            let (w, h) = img.size();
+            let crop: Crop = image_processing::Crop::default_square(w, h).into();
+
+            img.save(&cfg.images_folder, SIZES.into()).unwrap();
+
+            let (w, h) = img.size();
+
+            let pic = Picture::new(
+                &img.id(),
+                w as i64,
+                h as i64,
+                img.dominant_color().as_ref(),
+                &crop,
+            );
+
+            entity::Picture::from(&pic)
+                .insert_or_ignore(db)
+                .await
+                .unwrap();
 
             let content_type: String = ContentType::json().to_string();
 

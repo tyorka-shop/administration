@@ -1,8 +1,5 @@
 use crate::{
-    entity::{
-        product::{self, Product},
-        user::User, blog_post::{self, BlogPost},
-    },
+    graphql_types::{BlogPost, Product, User},
     guard::{Role, RoleData},
 };
 use async_graphql::{Context, Object, Result, ID};
@@ -31,7 +28,7 @@ impl Queries {
     #[graphql(guard = "RoleData::admin()")]
     async fn products(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        Ok(product::Entity::get_all(db)
+        Ok(entity::Product::get_all(db)
             .await
             .unwrap()
             .iter()
@@ -42,7 +39,7 @@ impl Queries {
     #[graphql(guard = "RoleData::admin()")]
     async fn product(&self, ctx: &Context<'_>, id: ID) -> Result<Product> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        let product = product::Entity::get_by_id(db, &id.to_string())
+        let product = entity::Product::get_by_id(db, &id.to_string())
             .await
             .unwrap();
         Ok((&product).into())
@@ -52,7 +49,7 @@ impl Queries {
     async fn shop(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
         let products = sqlx::query_as!(
-            product::Entity,
+            entity::Product,
             "SELECT * FROM products WHERE show_in_shop = 1"
         )
         .fetch_all(db)
@@ -68,7 +65,7 @@ impl Queries {
     async fn gallery(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
         let products = sqlx::query_as!(
-            product::Entity,
+            entity::Product,
             "SELECT * FROM products WHERE show_in_gallery = 1"
         )
         .fetch_all(db)
@@ -83,16 +80,15 @@ impl Queries {
     #[graphql(guard = "RoleData::admin()")]
     async fn blog(&self, ctx: &Context<'_>) -> Result<Vec<BlogPost>> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        let posts = sqlx::query_as!(blog_post::Entity, "SELECT * FROM blog")
-        .fetch_all(db)
-        .await
-        .unwrap()
-        .iter()
-        .map(BlogPost::from)
-        .collect();
+        let posts = sqlx::query_as!(entity::BlogPost, "SELECT * FROM blog")
+            .fetch_all(db)
+            .await
+            .unwrap()
+            .iter()
+            .map(BlogPost::from)
+            .collect();
         Ok(posts)
     }
-
 }
 
 #[cfg(test)]
@@ -142,10 +138,7 @@ mod role {
 
 #[cfg(test)]
 mod products {
-    use crate::{
-        entity::{picture, product::Entity},
-        guard::Role,
-    };
+    use crate::guard::Role;
 
     use super::Queries;
     use async_graphql::{EmptyMutation, EmptySubscription, Request, Result, Variables};
@@ -180,7 +173,7 @@ mod products {
     pub async fn valid() {
         let db = setup_db().await.unwrap();
 
-        let product = Entity::mock();
+        let product = entity::Product::new_fixture();
 
         product.insert(&db).await.unwrap();
 
@@ -199,9 +192,9 @@ mod products {
     pub async fn pictures() {
         let db = setup_db().await.unwrap();
 
-        let product = Entity::mock();
+        let product = entity::Product::new_fixture();
 
-        let mut picture = picture::Entity::mock();
+        let mut picture = entity::Picture::new_fixture();
         picture.product_id = Some(product.id.clone());
 
         picture.insert(&db).await.unwrap();
@@ -220,9 +213,9 @@ mod products {
     pub async fn cover() {
         let db = setup_db().await.unwrap();
 
-        let mut product = Entity::mock();
+        let mut product = entity::Product::new_fixture();
 
-        let picture = picture::Entity::mock();
+        let picture = entity::Picture::new_fixture();
         product.cover_id = picture.id.clone();
 
         product.insert(&db).await.unwrap();
@@ -241,7 +234,7 @@ mod products {
     pub async fn by_id() {
         let db = setup_db().await.unwrap();
 
-        let product = Entity::mock();
+        let product = entity::Product::new_fixture();
 
         product.insert(&db).await.unwrap();
 
@@ -260,7 +253,7 @@ mod products {
     pub async fn description() {
         let db = setup_db().await.unwrap();
 
-        let mut product = Entity::mock();
+        let mut product = entity::Product::new_fixture();
 
         product.description_en = "This was ~~erased~~ *deleted*.".to_string();
 

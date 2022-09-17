@@ -641,6 +641,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "entity"
+version = "0.1.0"
+dependencies = [
+ "assert-json-diff",
+ "async-graphql",
+ "async-graphql-poem",
+ "async-trait",
+ "cache",
+ "chrono",
+ "constant_time_eq",
+ "dominant_color",
+ "env_logger 0.9.0",
+ "eyre",
+ "futures",
+ "hex",
+ "image",
+ "insta",
+ "log",
+ "macros",
+ "markdown",
+ "markdown_to_text",
+ "md5",
+ "poem",
+ "rayon",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_qs",
+ "session_service_grpc",
+ "sqlx",
+ "sqlxinsert",
+ "tokio",
+ "tokio_schedule",
+ "uuid",
+]
+
+[[package]]
 name = "env_logger"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1180,6 +1217,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "image_processing"
+version = "0.1.0"
+dependencies = [
+ "async-graphql",
+ "async-graphql-poem",
+ "async-trait",
+ "cache",
+ "chrono",
+ "constant_time_eq",
+ "dominant_color",
+ "env_logger 0.9.0",
+ "eyre",
+ "futures",
+ "hex",
+ "image",
+ "log",
+ "markdown",
+ "markdown_to_text",
+ "md5",
+ "poem",
+ "rayon",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_qs",
+ "session_service_grpc",
+ "sqlx",
+ "sqlxinsert",
+ "tokio",
+ "tokio_schedule",
+ "uuid",
+]
+
+[[package]]
 name = "indenter"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1208,6 +1279,27 @@ dependencies = [
  "serde",
  "similar",
  "yaml-rust",
+]
+
+[[package]]
+name = "insta_sync"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "entity",
+ "env_logger 0.9.0",
+ "eyre",
+ "futures",
+ "image_processing",
+ "log",
+ "rayon",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_qs",
+ "sqlx",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]
@@ -2868,11 +2960,13 @@ dependencies = [
  "config",
  "constant_time_eq",
  "dominant_color",
+ "entity",
  "env_logger 0.9.0",
  "eyre",
  "futures",
  "hex",
  "image",
+ "image_processing",
  "insta",
  "log",
  "macros",

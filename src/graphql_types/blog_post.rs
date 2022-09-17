@@ -9,16 +9,7 @@ pub struct BlogPost {
 }
 
 
-#[derive(macros::Entity)]
-#[table_name = "blog"]
-pub struct Entity {
-  pub id: String,
-  pub src: String,
-  pub url: String,
-  pub color: String
-}
-
-impl From<&BlogPost> for Entity {
+impl From<&BlogPost> for entity::BlogPost {
   fn from(post: &BlogPost) -> Self {
     Self {
       id: post.id.to_string(),
@@ -29,8 +20,8 @@ impl From<&BlogPost> for Entity {
   }
 }
 
-impl From<&Entity> for BlogPost {
-  fn from(post: &Entity) -> Self {
+impl From<&entity::BlogPost> for BlogPost {
+  fn from(post: &entity::BlogPost) -> Self {
     Self {
       id: ID::from(post.id.clone()),
       src: post.src.clone(),

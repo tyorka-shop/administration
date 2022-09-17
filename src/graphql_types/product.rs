@@ -1,20 +1,6 @@
 use super::multi_lang::MultiLang;
-use async_graphql::{Result, ID};
+use async_graphql::ID;
 use serde::Serialize;
-
-#[derive(macros::Entity)]
-#[table_name = "products"]
-pub struct Entity {
-    pub id: String,
-    pub cover_id: String,
-    pub title_en: String,
-    pub title_ru: String,
-    pub description_en: String,
-    pub description_ru: String,
-    pub price: Option<i64>,
-    pub show_in_gallery: bool,
-    pub show_in_shop: bool,
-}
 
 #[derive(async_graphql::SimpleObject)]
 #[graphql(complex)]
@@ -29,8 +15,8 @@ pub struct Product {
     pub description: MultiLang,
 }
 
-impl From<&Entity> for Product {
-    fn from(row: &Entity) -> Self {
+impl From<&entity::Product> for Product {
+    fn from(row: &entity::Product) -> Self {
         Self {
             id: ID::from(&row.id),
             cover_id: row.cover_id.clone(),
@@ -61,7 +47,7 @@ pub struct ProductInput {
     pub description: MultiLang,
 }
 
-impl From<&ProductInput> for Entity {
+impl From<&ProductInput> for entity::Product {
     fn from(input: &ProductInput) -> Self {
         Self {
             id: input.id.to_string(),
@@ -79,7 +65,7 @@ impl From<&ProductInput> for Entity {
 
 #[cfg(test)]
 impl ProductInput {
-    pub fn mock() -> Self {
+    pub fn new_fixture() -> Self {
         let pic_id = ID::from(format!("{:x}", md5::compute("cover_id")));
         Self {
             id: "07d7b72c-5b2e-4a35-a257-158496993dcc".into(),
@@ -96,23 +82,6 @@ impl ProductInput {
                 en: "description".to_string(),
                 ru: "описание".to_string(),
             },
-        }
-    }
-}
-
-#[cfg(test)]
-impl Entity {
-    pub fn mock() -> Self {
-        Self {
-            id: "07d7b72c-5b2e-4a35-a257-158496993dcc".into(),
-            cover_id: format!("{:x}", md5::compute("cover_id")),
-            title_en: "title".to_string(),
-            title_ru: "заголовок".to_string(),
-            description_en: "description".to_string(),
-            description_ru: "описание".to_string(),
-            price: None,
-            show_in_gallery: true,
-            show_in_shop: false,
         }
     }
 }

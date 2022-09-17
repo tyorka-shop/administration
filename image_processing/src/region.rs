@@ -1,6 +1,6 @@
-use crate::entity::crop::Crop;
+use crate::Crop;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Region {
     pub left: u32,
     pub top: u32,
@@ -15,6 +15,16 @@ impl Region {
             top: 0,
             width,
             height,
+        }
+    }
+
+    pub fn get_center_square(&self) -> Self {
+        let min = self.width.min(self.height);
+        Self {
+            left: self.left + (self.width - min) / 2,
+            top: self.top + (self.height - min) / 2,
+            width: min,
+            height: min,
         }
     }
 
@@ -33,6 +43,7 @@ impl Region {
 
         Ok(region)
     }
+
 }
 
 #[derive(Debug)]

@@ -1,7 +1,11 @@
 [package]
 edition = "2021"
-name = "tyorka-admin"
+name = "entity"
 version = "0.1.0"
+
+[lib]
+name = "entity"
+path = "src/lib.rs"
 
 [dependencies]
 log = "0.4.17"
@@ -9,7 +13,6 @@ env_logger = "0.9.0"
 tokio = "1.20.1"
 uuid = { version = "1.1.2", features = ["v4"] }
 sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "sqlite" ] }
-config = { path = "./config" }
 session_service_grpc = { git = "https://github.com/tyorka-shop/session-service-grpc.git" }
 cache = {git = "https://github.com/tyorka-shop/cache.git"}
 sqlxinsert = "0.6.0"
@@ -19,7 +22,7 @@ async-trait = "0.1.57"
 poem = { version = "1.3.42", features = ["multipart"] }
 async-graphql-poem = "4.0.13"
 constant_time_eq = "0.2.4"
-macros = { path = "./macros" }
+macros = { path = "../macros" }
 hex = "0.4.3"
 image = "0.24.3"
 md5 = "0.7.0"
@@ -34,12 +37,7 @@ reqwest = { version = "0.11.11", features = ["json"] }
 futures = "0.3.24"
 tokio_schedule = "0.3.0"
 chrono = "0.4.22"
-entity = { path = "./entity" }
-image_processing = { path = "./image_processing" }
 
 [dev-dependencies]
 assert-json-diff = "2.0.2"
 insta = { version = "1.19.1", features = ["json"] }
-
-[workspace]
-members = [".", "config", "macros", "entity", "image_processing", "insta_sync"]

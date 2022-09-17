@@ -1,11 +1,10 @@
 use async_graphql::{ComplexObject, Context};
 use sqlx::{Result, SqlitePool};
 
-use crate::entity::{multi_lang::MultiLang, picture::{self, Picture}, product::Product};
+use crate::graphql_types::{MultiLang, Picture, Product};
 
 #[ComplexObject]
 impl Product {
-
     // back compatibility
     async fn state(&self) -> Result<String> {
         Ok("DRAFT".into())
@@ -13,7 +12,7 @@ impl Product {
 
     async fn cover(&self, ctx: &Context<'_>) -> Result<Picture> {
         let pool = ctx.data::<SqlitePool>().unwrap();
-        let cover = picture::Entity::get_by_id(&pool, &self.cover_id).await?;
+        let cover = entity::Picture::get_by_id(&pool, &self.cover_id).await?;
         Ok(cover.into())
     }
 

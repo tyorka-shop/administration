@@ -1,24 +1,9 @@
-use async_graphql::ID;
-use serde::Serialize;
-
-#[derive(macros::Entity)]
-#[table_name = "pictures"]
-pub struct Entity {
-    pub id: String,
-    pub color: String,
-    pub original_size_width: i64,
-    pub original_size_height: i64,
-    pub crop_anchor_x: f64,
-    pub crop_anchor_y: f64,
-    pub crop_factor: f64,
-    pub product_id: Option<String>,
-    pub idx: Option<i64>,
-}
-
 use super::{
     crop::{Crop, Point},
     picture_size::PictureSize,
 };
+use async_graphql::ID;
+use serde::Serialize;
 
 #[derive(Debug, Serialize, async_graphql::SimpleObject)]
 pub struct Picture {
@@ -31,8 +16,8 @@ pub struct Picture {
     pub product_id: Option<String>,
 }
 
-impl From<Entity> for Picture {
-    fn from(row: Entity) -> Self {
+impl From<entity::Picture> for Picture {
+    fn from(row: entity::Picture) -> Self {
         Self {
             id: ID::from(row.id),
             color: row.color,
@@ -53,18 +38,18 @@ impl From<Entity> for Picture {
 }
 
 impl Picture {
-    pub fn new(filename: &str, width: i64, height: i64, dominant_color: &str) -> Self {
+    pub fn new(filename: &str, width: i64, height: i64, dominant_color: &str, crop: &Crop) -> Self {
         Self {
             id: ID::from(filename),
             color: dominant_color.to_string(),
             original_size: PictureSize { width, height },
-            crop: Crop::default_square(width as u32, height as u32),
+            crop: crop.clone(),
             product_id: None,
         }
     }
 }
 
-impl From<&Picture> for Entity {
+impl From<&Picture> for entity::Picture {
     fn from(pic: &Picture) -> Self {
         Self {
             id: pic.id.to_string(),
@@ -82,33 +67,18 @@ impl From<&Picture> for Entity {
 
 impl Picture {
     pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &ID) -> sqlx::Result<Vec<Self>> {
-        let rows = sqlx::query_as!(Entity, "select * from pictures where product_id = ? order by `idx`", id.0)
-            .fetch_all(db)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(|row| row.into())
-            .collect::<Vec<Self>>();
+        let rows = sqlx::query_as!(
+            entity::Picture,
+            "select * from pictures where product_id = ? order by `idx`",
+            id.0
+        )
+        .fetch_all(db)
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|row| row.into())
+        .collect::<Vec<Self>>();
 
         Ok(rows)
-    }
-}
-
-
-
-#[cfg(test)]
-impl Entity {
-    pub fn mock() -> Self {
-        Self {
-            id: "4e2d05fa-d79c-401c-8cdf-275eb2dccbae".into(),
-            color: "#000000".into(),
-            original_size_width: 100,
-            original_size_height: 100,
-            crop_anchor_x: 0.5,
-            crop_anchor_y: 0.5,
-            crop_factor: 1.0,
-            product_id: None,
-            idx: None,
-        }
     }
 }

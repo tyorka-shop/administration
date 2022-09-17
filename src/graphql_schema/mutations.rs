@@ -1,7 +1,7 @@
 use async_graphql::{Context, Object, Result};
 use sqlx::SqlitePool;
 
-use crate::entity::product::{self, Product, ProductInput};
+use crate::graphql_types::{Product, ProductInput};
 
 pub struct Mutations;
 
@@ -10,7 +10,7 @@ impl Mutations {
     async fn save_product<'a>(&self, ctx: &Context<'a>, product: ProductInput) -> Result<Product> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
-        let entity = product::Entity::from(&product);
+        let entity = entity::Product::from(&product);
 
         if product.pictures.len() == 0 {
             return Err("Product must have at least one picture".into());
@@ -48,7 +48,7 @@ impl Mutations {
 
 #[cfg(test)]
 mod save_product {
-    use crate::entity::product::ProductInput;
+    use crate::graphql_types::ProductInput;
 
     use super::Mutations;
     use async_graphql::{EmptySubscription, InputType, Object, Request, Result, Variables};
@@ -94,7 +94,7 @@ mod save_product {
 
     #[tokio::test]
     pub async fn valid() {
-        let product = ProductInput::mock();
+        let product = ProductInput::new_fixture();
         let (result, _) = request(&product).await;
 
         assert_eq!(result.errors.first(), None);
@@ -104,7 +104,7 @@ mod save_product {
 
     #[tokio::test]
     pub async fn empty_pictures() {
-        let mut product = ProductInput::mock();
+        let mut product = ProductInput::new_fixture();
         product.pictures = vec![];
 
         let (result, _) = request(&product).await;
@@ -117,7 +117,7 @@ mod save_product {
 
     #[tokio::test]
     pub async fn price_must_be_set() {
-        let mut product = ProductInput::mock();
+        let mut product = ProductInput::new_fixture();
         product.show_in_shop = true;
         product.price = None;
 
@@ -131,7 +131,7 @@ mod save_product {
 
     #[tokio::test]
     pub async fn price_must_be_gt_0() {
-        let mut product = ProductInput::mock();
+        let mut product = ProductInput::new_fixture();
         product.show_in_shop = true;
         product.price = Some(0);
 
@@ -148,7 +148,7 @@ mod save_product {
         let schema = async_graphql::Schema::build(Queries, Mutations, EmptySubscription).finish();
         let db = setup_db().await.unwrap();
 
-        let mut product = ProductInput::mock();
+        let mut product = ProductInput::new_fixture();
 
         let request = make_request(&product).data(db.clone());
 
