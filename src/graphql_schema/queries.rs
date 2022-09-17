@@ -1,7 +1,7 @@
 use crate::{
     entity::{
         product::{self, Product},
-        user::User,
+        user::User, blog_post::{self, BlogPost},
     },
     guard::{Role, RoleData},
 };
@@ -79,6 +79,20 @@ impl Queries {
         .collect();
         Ok(products)
     }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn blog(&self, ctx: &Context<'_>) -> Result<Vec<BlogPost>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let posts = sqlx::query_as!(blog_post::Entity, "SELECT * FROM blog")
+        .fetch_all(db)
+        .await
+        .unwrap()
+        .iter()
+        .map(BlogPost::from)
+        .collect();
+        Ok(posts)
+    }
+
 }
 
 #[cfg(test)]

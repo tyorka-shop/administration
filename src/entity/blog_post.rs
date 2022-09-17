@@ -28,3 +28,14 @@ impl From<&BlogPost> for Entity {
     }
   }
 }
+
+impl From<&Entity> for BlogPost {
+  fn from(post: &Entity) -> Self {
+    Self {
+      id: ID::from(post.id.clone()),
+      src: post.src.clone(),
+      url: post.url.clone(),
+      color: post.color.clone()
+    }
+  }
+}
