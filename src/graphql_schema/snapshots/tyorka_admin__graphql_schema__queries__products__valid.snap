@@ -1,0 +1,23 @@
+---
+source: src/graphql_schema/queries.rs
+expression: result.data.into_json().unwrap()
+---
+{
+  "products": [
+    {
+      "__typename": "Product",
+      "description": {
+        "en": "description",
+        "ru": "описание"
+      },
+      "id": "07d7b72c-5b2e-4a35-a257-158496993dcc",
+      "price": null,
+      "showInGallery": true,
+      "showInShop": false,
+      "title": {
+        "en": "title",
+        "ru": "заголовок"
+      }
+    }
+  ]
+}

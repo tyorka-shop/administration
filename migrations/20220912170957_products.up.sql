@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS products (
   id VARCHAR(255) PRIMARY KEY NOT NULL,
-  cover_id VARCHAR(255),
+  cover_id VARCHAR(255) NOT NULL,
   
   title_en TEXT NOT NULL,
   title_ru TEXT NOT NULL,

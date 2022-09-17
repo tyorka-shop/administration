@@ -1,0 +1,9 @@
+---
+source: src/graphql_schema/mutations.rs
+expression: result.data.into_json().unwrap()
+---
+{
+  "saveProduct": {
+    "id": "07d7b72c-5b2e-4a35-a257-158496993dcc"
+  }
+}

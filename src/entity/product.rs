@@ -1,12 +1,12 @@
 use super::multi_lang::MultiLang;
-use async_graphql::Result;
+use async_graphql::{Result, ID};
 use serde::Serialize;
 
 #[derive(macros::Entity)]
 #[table_name = "products"]
 pub struct Entity {
     pub id: String,
-    pub cover_id: Option<String>,
+    pub cover_id: String,
     pub title_en: String,
     pub title_ru: String,
     pub description_en: String,
@@ -19,8 +19,9 @@ pub struct Entity {
 #[derive(async_graphql::SimpleObject)]
 #[graphql(complex)]
 pub struct Product {
-    pub id: String,
-    pub cover_id: Option<String>,
+    pub id: ID,
+    #[graphql(skip)]
+    pub cover_id: String,
     pub title: MultiLang,
     pub show_in_gallery: bool,
     pub show_in_shop: bool,
@@ -31,7 +32,7 @@ pub struct Product {
 impl From<&Entity> for Product {
     fn from(row: &Entity) -> Self {
         Self {
-            id: row.id.clone(),
+            id: ID::from(&row.id),
             cover_id: row.cover_id.clone(),
             description: MultiLang {
                 en: row.description_en.clone(),
@@ -50,9 +51,9 @@ impl From<&Entity> for Product {
 
 #[derive(async_graphql::InputObject, Serialize, Clone)]
 pub struct ProductInput {
-    pub id: String,
-    pub pictures: Vec<String>,
-    pub cover_id: Option<String>,
+    pub id: ID,
+    pub pictures: Vec<ID>,
+    pub cover_id: ID,
     pub title: MultiLang,
     pub show_in_gallery: bool,
     pub show_in_shop: bool,
@@ -63,7 +64,7 @@ pub struct ProductInput {
 impl From<&ProductInput> for Entity {
     fn from(input: &ProductInput) -> Self {
         Self {
-            id: input.id.clone(),
+            id: input.id.to_string(),
             title_en: input.title.en.clone(),
             title_ru: input.title.ru.clone(),
             description_en: input.description.en.clone(),
@@ -71,7 +72,7 @@ impl From<&ProductInput> for Entity {
             price: input.price,
             show_in_gallery: input.show_in_gallery,
             show_in_shop: input.show_in_shop,
-            cover_id: input.cover_id.clone(),
+            cover_id: input.cover_id.to_string(),
         }
     }
 }
@@ -79,10 +80,11 @@ impl From<&ProductInput> for Entity {
 #[cfg(test)]
 impl ProductInput {
     pub fn mock() -> Self {
+        let pic_id = ID::from(format!("{:x}", md5::compute("cover_id")));
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
-            pictures: vec!["bc1e6f801c0a2657af7eeb23638fd5b8".to_string()],
-            cover_id: None,
+            id: "07d7b72c-5b2e-4a35-a257-158496993dcc".into(),
+            pictures: vec![pic_id.clone()],
+            cover_id: pic_id,
             title: MultiLang {
                 en: "title".to_string(),
                 ru: "заголовок".to_string(),
@@ -102,8 +104,8 @@ impl ProductInput {
 impl Entity {
     pub fn mock() -> Self {
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
-            cover_id: None,
+            id: "07d7b72c-5b2e-4a35-a257-158496993dcc".into(),
+            cover_id: format!("{:x}", md5::compute("cover_id")),
             title_en: "title".to_string(),
             title_ru: "заголовок".to_string(),
             description_en: "description".to_string(),

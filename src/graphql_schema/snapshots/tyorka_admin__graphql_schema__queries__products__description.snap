@@ -1,0 +1,14 @@
+---
+source: src/graphql_schema/queries.rs
+expression: result.data.into_json().unwrap()
+---
+{
+  "product": {
+    "descriptionHTML": {
+      "en": "<p>This was ~~erased~~ <em>deleted</em>.</p>\n"
+    },
+    "descriptionText": {
+      "en": "This was  deleted."
+    }
+  }
+}

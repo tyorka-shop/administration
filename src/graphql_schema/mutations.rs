@@ -10,7 +10,7 @@ impl Mutations {
     async fn save_product<'a>(&self, ctx: &Context<'a>, product: ProductInput) -> Result<Product> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
-        let mut entity = product::Entity::from(&product);
+        let entity = product::Entity::from(&product);
 
         if product.pictures.len() == 0 {
             return Err("Product must have at least one picture".into());
@@ -26,18 +26,15 @@ impl Mutations {
             }
         }
 
-        if product.cover_id == None {
-            log::debug!("cover_id does not provided");
-            entity.cover_id = product.pictures.first().map(|s| s.to_string());
-        }
-
         entity.insert_or_update(db).await?;
 
         for (i, picture_id) in product.pictures.iter().enumerate() {
             let index = i.to_string();
+            let product_id = product.id.to_string();
+            let picture_id = picture_id.to_string();
             sqlx::query!(
                 "update pictures set product_id = $1, `idx` = $2 where id = $3",
-                product.id,
+                product_id,
                 index,
                 picture_id
             )
@@ -81,11 +78,7 @@ mod save_product {
     fn make_request(product: &ProductInput) -> Request {
         let vars = Variables::from_json(serde_json::json!({ "product": product.to_value() }));
 
-        let mutation = r#"
-            mutation AddProduct($product: ProductInput!) {
-                saveProduct(product: $product) { id }
-            }
-        "#;
+        let mutation = r#"mutation AddProduct($product: ProductInput!) { saveProduct(product: $product) { id } }"#;
 
         Request::new(mutation).variables(vars)
     }
@@ -106,10 +99,7 @@ mod save_product {
 
         assert_eq!(result.errors.first(), None);
 
-        assert_eq!(
-            serde_json::to_string(&result).unwrap(),
-            serde_json::json!({"data":{"saveProduct": {"id": product.id}}}).to_string()
-        );
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
 
     #[tokio::test]
@@ -154,30 +144,6 @@ mod save_product {
     }
 
     #[tokio::test]
-    pub async fn default_cover() {
-        let mut product = ProductInput::mock();
-        product.show_in_shop = false;
-        product.price = None;
-
-        let (result, db) = request(&product).await;
-
-        let row = sqlx::query!("select * from products where id = ? ", product.id)
-            .fetch_one(&db)
-            .await
-            .unwrap();
-
-        assert_eq!(
-            serde_json::to_string(&result).unwrap(),
-            serde_json::json!({"data":{"saveProduct": {"id": product.id}}}).to_string()
-        );
-
-        assert_eq!(
-            row.cover_id.unwrap(),
-            product.pictures.first().map(|s| s.to_string()).unwrap()
-        );
-    }
-
-    #[tokio::test]
     pub async fn update() {
         let schema = async_graphql::Schema::build(Queries, Mutations, EmptySubscription).finish();
         let db = setup_db().await.unwrap();
@@ -200,7 +166,7 @@ mod save_product {
             serde_json::json!({"data":{"saveProduct": {"id": product.id}}}).to_string()
         );
 
-        let row = sqlx::query!("select * from products where id = ? ", product.id)
+        let row = sqlx::query!("select * from products where id = ? ", product.id.0)
             .fetch_one(&db)
             .await
             .unwrap();

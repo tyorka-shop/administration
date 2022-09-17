@@ -1,3 +1,4 @@
+use async_graphql::ID;
 use serde::Serialize;
 
 #[derive(macros::Entity)]
@@ -21,7 +22,7 @@ use super::{
 
 #[derive(Debug, Serialize, async_graphql::SimpleObject)]
 pub struct Picture {
-    pub id: String,
+    pub id: ID,
     pub color: String,
     pub original_size: PictureSize,
     pub crop: Crop,
@@ -33,7 +34,7 @@ pub struct Picture {
 impl From<Entity> for Picture {
     fn from(row: Entity) -> Self {
         Self {
-            id: row.id,
+            id: ID::from(row.id),
             color: row.color,
             original_size: PictureSize {
                 width: row.original_size_width,
@@ -54,7 +55,7 @@ impl From<Entity> for Picture {
 impl Picture {
     pub fn new(filename: &str, width: i64, height: i64, dominant_color: &str) -> Self {
         Self {
-            id: filename.to_string(),
+            id: ID::from(filename),
             color: dominant_color.to_string(),
             original_size: PictureSize { width, height },
             crop: Crop::default_square(width as u32, height as u32),
@@ -66,7 +67,7 @@ impl Picture {
 impl From<&Picture> for Entity {
     fn from(pic: &Picture) -> Self {
         Self {
-            id: pic.id.clone(),
+            id: pic.id.to_string(),
             color: pic.color.clone(),
             original_size_width: pic.original_size.width,
             original_size_height: pic.original_size.height,
@@ -80,8 +81,8 @@ impl From<&Picture> for Entity {
 }
 
 impl Picture {
-    pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &str) -> sqlx::Result<Vec<Self>> {
-        let rows = sqlx::query_as!(Entity, "select * from pictures where product_id = ? order by `idx`", id)
+    pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &ID) -> sqlx::Result<Vec<Self>> {
+        let rows = sqlx::query_as!(Entity, "select * from pictures where product_id = ? order by `idx`", id.0)
             .fetch_all(db)
             .await
             .unwrap()
@@ -99,7 +100,7 @@ impl Picture {
 impl Entity {
     pub fn mock() -> Self {
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: "4e2d05fa-d79c-401c-8cdf-275eb2dccbae".into(),
             color: "#000000".into(),
             original_size_width: 100,
             original_size_height: 100,

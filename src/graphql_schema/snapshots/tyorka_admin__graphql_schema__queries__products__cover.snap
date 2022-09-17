@@ -1,0 +1,13 @@
+---
+source: src/graphql_schema/queries.rs
+expression: result.data.into_json().unwrap()
+---
+{
+  "products": [
+    {
+      "cover": {
+        "id": "4e2d05fa-d79c-401c-8cdf-275eb2dccbae"
+      }
+    }
+  ]
+}

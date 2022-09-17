@@ -1,8 +1,11 @@
 use crate::{
-    entity::product::{self, Product},
-    guard::RoleData,
+    entity::{
+        product::{self, Product},
+        user::User,
+    },
+    guard::{Role, RoleData},
 };
-use async_graphql::{Context, Object, Result};
+use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
 
 pub struct Queries;
@@ -11,6 +14,18 @@ pub struct Queries;
 impl Queries {
     async fn status(&self) -> Result<String> {
         Ok("Ok".into())
+    }
+
+    async fn user(&self, ctx: &Context<'_>) -> Result<User> {
+        let role = ctx.data::<Role>().unwrap();
+        match role {
+            Role::Admin(email) => Ok(User {
+                email: email.clone(),
+            }),
+            _ => Ok(User {
+                email: "client".into(),
+            }),
+        }
     }
 
     #[graphql(guard = "RoleData::admin()")]
@@ -25,10 +40,44 @@ impl Queries {
     }
 
     #[graphql(guard = "RoleData::admin()")]
-    async fn product(&self, ctx: &Context<'_>, id: String) -> Result<Product> {
+    async fn product(&self, ctx: &Context<'_>, id: ID) -> Result<Product> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        let product = product::Entity::get_by_id(db, &id).await.unwrap();
+        let product = product::Entity::get_by_id(db, &id.to_string())
+            .await
+            .unwrap();
         Ok((&product).into())
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn shop(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let products = sqlx::query_as!(
+            product::Entity,
+            "SELECT * FROM products WHERE show_in_shop = 1"
+        )
+        .fetch_all(db)
+        .await
+        .unwrap()
+        .iter()
+        .map(Product::from)
+        .collect();
+        Ok(products)
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn gallery(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let products = sqlx::query_as!(
+            product::Entity,
+            "SELECT * FROM products WHERE show_in_gallery = 1"
+        )
+        .fetch_all(db)
+        .await
+        .unwrap()
+        .iter()
+        .map(Product::from)
+        .collect();
+        Ok(products)
     }
 }
 
@@ -83,7 +132,6 @@ mod products {
         entity::{picture, product::Entity},
         guard::Role,
     };
-    use assert_json_diff::assert_json_include;
 
     use super::Queries;
     use async_graphql::{EmptyMutation, EmptySubscription, Request, Result, Variables};
@@ -122,40 +170,15 @@ mod products {
 
         product.insert(&db).await.unwrap();
 
-        let query = r#"query Products { products { __typename id title { ...Localized } coverId showInGallery showInShop price description { ...Localized } } }
+        let query = r#"query Products { products { __typename id title { ...Localized } showInGallery showInShop price description { ...Localized } } }
         fragment Localized on MultiLang { en ru }
         "#;
 
-        let r = Request::new(query);
-
-        let result = request(r, &db).await;
+        let result = request(Request::new(query), &db).await;
 
         assert_eq!(result.errors.first(), None);
 
-        assert_json_include!(
-            expected: result.data.into_json().unwrap(),
-            actual: serde_json::json!({
-                "products": [
-                    {
-                        "__typename": "Product",
-                        "id": product.id,
-                        "title": {
-                            "en": product.title_en,
-                            "ru": product.title_ru,
-                        },
-                        "coverId": null,
-                        "showInGallery": true,
-                        "showInShop": false,
-                        "price": null,
-                        "description": {
-                            "en": product.description_en,
-                            "ru": product.description_ru,
-                        }
-                    }
-                ]
-
-            })
-        );
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
 
     #[tokio::test]
@@ -172,27 +195,32 @@ mod products {
 
         let query = r#"query Products { products { pictures { id } } }"#;
 
-        let r = Request::new(query);
-
-        let result = request(r, &db).await;
+        let result = request(Request::new(query), &db).await;
 
         assert_eq!(result.errors.first(), None);
 
-        assert_json_include!(
-            expected: result.data.into_json().unwrap(),
-            actual: serde_json::json!({
-                "products": [
-                    {
-                        "pictures": [
-                            {
-                                "id": picture.id,
-                            }
-                        ]
-                    }
-                ]
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
+    }
 
-            })
-        );
+    #[tokio::test]
+    pub async fn cover() {
+        let db = setup_db().await.unwrap();
+
+        let mut product = Entity::mock();
+
+        let picture = picture::Entity::mock();
+        product.cover_id = picture.id.clone();
+
+        product.insert(&db).await.unwrap();
+        picture.insert(&db).await.unwrap();
+
+        let query = r#"query Products { products { cover { id } } }"#;
+
+        let result = request(Request::new(query), &db).await;
+
+        assert_eq!(result.errors.first(), None);
+
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
 
     #[tokio::test]
@@ -206,18 +234,12 @@ mod products {
         let query = r#"query Product($id: String!) { product(id: $id) { id } }"#;
 
         let vars = Variables::from_json(serde_json::json!({ "id": product.id }));
-        let r = Request::new(query).variables(vars);
 
-        let result = request(r, &db).await;
+        let result = request(Request::new(query).variables(vars), &db).await;
 
         assert_eq!(result.errors.first(), None);
 
-        assert_json_include!(
-            expected: result.data.into_json().unwrap(),
-            actual: serde_json::json!({
-                "product": {"id": product.id}
-            })
-        );
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
 
     #[tokio::test]
@@ -233,25 +255,11 @@ mod products {
         let query = r#"query Product($id: String!) { product(id: $id) { descriptionText { en } descriptionHTML { en } } }"#;
 
         let vars = Variables::from_json(serde_json::json!({ "id": product.id }));
-        let r = Request::new(query).variables(vars);
 
-        let result = request(r, &db).await;
+        let result = request(Request::new(query).variables(vars), &db).await;
 
         assert_eq!(result.errors.first(), None);
 
-        assert_json_include!(
-            expected: result.data.into_json().unwrap(),
-            actual: serde_json::json!({
-                "product": {
-                    "descriptionText": {
-                        "en": "This was  deleted."
-                    },
-                    "descriptionHTML": {
-                        "en": "<p>This was ~~erased~~ <em>deleted</em>.</p>\n"
-                    }
-                }
-            })
-        );
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
-
 }
