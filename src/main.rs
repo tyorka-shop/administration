@@ -1,9 +1,11 @@
-mod entity;
-mod graphql_schema;
-mod web;
-mod guard;
 mod cached_session_service;
+mod entity;
+mod feed;
+mod graphql_schema;
+mod guard;
 mod image_processing;
+mod web;
+mod tasks;
 
 use sqlx::sqlite::SqlitePoolOptions;
 
@@ -21,7 +23,9 @@ async fn main() {
 
     let web = web::make_server(cfg.clone(), db);
 
-    let result = tokio::join!(web.await);
+    let tasks = tasks::init();
+
+    let result = tokio::join!(web.await, tasks);
 
     println!("result: {:?}", result);
 }
