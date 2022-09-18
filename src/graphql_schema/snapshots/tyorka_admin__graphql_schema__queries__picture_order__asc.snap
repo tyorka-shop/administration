@@ -1,0 +1,18 @@
+---
+source: src/graphql_schema/queries.rs
+expression: result.data.into_json().unwrap()
+---
+{
+  "products": [
+    {
+      "pictures": [
+        {
+          "id": "1"
+        },
+        {
+          "id": "2"
+        }
+      ]
+    }
+  ]
+}

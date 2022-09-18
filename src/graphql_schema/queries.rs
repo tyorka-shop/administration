@@ -254,6 +254,72 @@ mod products {
 }
 
 #[cfg(test)]
+mod picture_order {
+    use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Result};
+    use sqlx::SqlitePool;
+
+    use crate::guard::Role;
+
+    use super::Queries;
+
+    async fn request(query: &str, db: &SqlitePool) -> Response {
+        let schema =
+            async_graphql::Schema::build(Queries, EmptyMutation, EmptySubscription).finish();
+
+        let r = Request::new(query);
+
+        let response = schema
+            .execute(r.data(db.clone()).data(Role::Admin("admin".to_string())))
+            .await;
+        assert_eq!(response.errors.first(), None);
+        response
+    }
+
+    async fn setup(list: [i64;2]) -> Result<SqlitePool>{
+        let db = crate::test_utils::setup_db().await.unwrap();
+
+        let product = entity::Product::new_fixture();
+        product.insert(&db).await.unwrap();
+
+        for i in 1..3 {
+            let id = i.to_string();
+            let mut picture = entity::Picture::new_fixture();
+            picture.id = id;
+            picture.product_id = Some(product.id.clone());
+            picture.idx = Some(list[i-1]);
+
+            picture.insert(&db).await.unwrap();
+        }
+
+        Ok(db)
+    }
+
+    #[tokio::test]
+    async fn asc() {
+        let db = setup([1,2]).await.unwrap();
+
+        let query = r#"query Products { products { pictures { id } } }"#;
+
+        let result = request(query, &db).await;
+
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
+    }
+
+    #[tokio::test]
+    async fn desc() {
+        let db = setup([2,1]).await.unwrap();
+
+        let query = r#"query Products { products { pictures { id } } }"#;
+
+        let result = request(query, &db).await;
+
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
+    }
+
+
+}
+
+#[cfg(test)]
 mod entity_order {
     use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Result};
     use sqlx::SqlitePool;
