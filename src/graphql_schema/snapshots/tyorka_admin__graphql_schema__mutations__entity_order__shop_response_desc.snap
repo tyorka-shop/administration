@@ -1,0 +1,14 @@
+---
+source: src/graphql_schema/mutations.rs
+expression: response.data.into_json().unwrap()
+---
+{
+  "saveGalleryOrder": [
+    {
+      "id": "2"
+    },
+    {
+      "id": "1"
+    }
+  ]
+}

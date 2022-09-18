@@ -1,0 +1,14 @@
+---
+source: src/graphql_schema/queries.rs
+expression: response.data.into_json().unwrap()
+---
+{
+  "shop": [
+    {
+      "id": "2"
+    },
+    {
+      "id": "1"
+    }
+  ]
+}

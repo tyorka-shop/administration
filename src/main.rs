@@ -5,6 +5,9 @@ mod guard;
 mod web;
 mod image_storage;
 
+#[cfg(test)]
+mod test_utils;
+
 use sqlx::sqlite::SqlitePoolOptions;
 use image_storage::ImageStorage;
 

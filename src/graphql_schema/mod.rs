@@ -1,6 +1,6 @@
 mod mutations;
-mod queries;
 mod product_resolver;
+mod queries;
 
 use async_graphql::{EmptySubscription, SchemaBuilder};
 

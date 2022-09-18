@@ -643,6 +643,7 @@ name = "entity"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "log",
  "macros",
  "md5",
  "reqwest",
