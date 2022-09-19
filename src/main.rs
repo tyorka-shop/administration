@@ -4,6 +4,7 @@ mod graphql_schema;
 mod guard;
 mod web;
 mod image_storage;
+mod builder;
 
 #[cfg(test)]
 mod test_utils;

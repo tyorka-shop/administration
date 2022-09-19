@@ -5,6 +5,7 @@ mod product;
 mod multi_lang;
 mod blog_post;
 mod user;
+mod build;
 
 
 pub use product::{Product, ProductInput};
@@ -13,4 +14,5 @@ pub use crop::Crop;
 pub use blog_post::BlogPost;
 pub use multi_lang::MultiLang;
 pub use user::User;
+pub use build::Build;
 

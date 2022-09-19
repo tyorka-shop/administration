@@ -30,17 +30,9 @@ impl Product {
     }
 
     pub fn new_fixture_with_id(id: &str) -> Self {
-        Self {
-            id: id.into(),
-            cover_id: format!("{:x}", md5::compute(format!("{}:cover_id", &id))),
-            title_en: "title".to_string(),
-            title_ru: "заголовок".to_string(),
-            description_en: "description".to_string(),
-            description_ru: "описание".to_string(),
-            price: None,
-            show_in_gallery: true,
-            show_in_shop: false,
-        }
+        let mut result = Self::new_fixture();
+        result.id = id.into();
+        result
     }
 
     pub async fn get_gallery(db: &SqlitePool) -> Result<Vec<Product>, sqlx::Error> {

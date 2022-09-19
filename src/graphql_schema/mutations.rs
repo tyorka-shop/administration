@@ -3,13 +3,16 @@ use sqlx::SqlitePool;
 
 use crate::{
     graphql_types::{Crop, Picture, Product, ProductInput},
-    image_storage::ImageStorage,
+    image_storage::ImageStorage, builder::Builder,
+    guard::RoleData
 };
 
 pub struct Mutations;
 
 #[Object]
 impl Mutations {
+    
+    #[graphql(guard = "RoleData::admin()")]
     async fn save_product<'a>(&self, ctx: &Context<'a>, product: ProductInput) -> Result<Product> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
@@ -30,11 +33,17 @@ impl Mutations {
         }
 
         entity.insert_or_update(db).await?;
+        let cover_id = product.cover_id.to_string();
 
         for (i, picture_id) in product.pictures.iter().enumerate() {
-            let index = i.to_string();
             let product_id = product.id.to_string();
             let picture_id = picture_id.to_string();
+            let index = if picture_id == cover_id {
+                "0".to_string()
+            } else {
+                let index = (i + 1).to_string();
+                index
+            };
             sqlx::query!(
                 "update pictures set product_id = $1, `idx` = $2 where id = $3",
                 product_id,
@@ -45,9 +54,10 @@ impl Mutations {
             .await?;
         }
 
-        Ok(Product::from(&entity))
+        Ok(Product::from(entity))
     }
 
+    #[graphql(guard = "RoleData::admin()")]
     async fn save_crop(&self, ctx: &Context<'_>, id: ID, crop: Crop) -> Result<Picture> {
         let db = ctx.data::<SqlitePool>().unwrap();
         let images = ctx.data::<ImageStorage>().unwrap();
@@ -66,6 +76,7 @@ impl Mutations {
         Ok(pic)
     }
 
+    #[graphql(guard = "RoleData::admin()")]
     async fn save_gallery_order(&self, ctx: &Context<'_>, list: Vec<ID>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
@@ -78,13 +89,14 @@ impl Mutations {
         let products = entity::Product::get_gallery(&db)
             .await
             .unwrap()
-            .iter()
+            .into_iter()
             .map(Product::from)
             .collect();
 
         Ok(products)
     }
 
+    #[graphql(guard = "RoleData::admin()")]
     async fn save_shop_order(&self, ctx: &Context<'_>, list: Vec<ID>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
@@ -95,20 +107,29 @@ impl Mutations {
         let products = entity::Product::get_shop(&db)
             .await
             .unwrap()
-            .iter()
+            .into_iter()
             .map(Product::from)
             .collect();
 
         Ok(products)
     }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn publish(&self, ctx: &Context<'_>) -> Result<ID> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let builder = ctx.data::<Builder>().unwrap();
+
+        let id = builder.build(&db).unwrap();
+        Ok(id.into())
+    }
 }
 
 #[cfg(test)]
 mod save_product {
-    use crate::graphql_types::ProductInput;
+    use crate::{graphql_types::{ProductInput, Picture}, guard::Role};
 
     use super::Mutations;
-    use async_graphql::{EmptySubscription, InputType, Object, Request, Result, Variables};
+    use async_graphql::{EmptySubscription, InputType, Object, Request, Result, Variables, ID};
 
     struct Queries;
 
@@ -122,9 +143,9 @@ mod save_product {
     fn make_request(product: &ProductInput) -> Request {
         let vars = Variables::from_json(serde_json::json!({ "product": product.to_value() }));
 
-        let mutation = r#"mutation AddProduct($product: ProductInput!) { saveProduct(product: $product) { id } }"#;
+        let mutation = r#"mutation SaveProduct($product: ProductInput!) { saveProduct(product: $product) { id } }"#;
 
-        Request::new(mutation).variables(vars)
+        Request::new(mutation).variables(vars).data(Role::Admin("admin".into()))
     }
 
     async fn request(product: &ProductInput) -> (async_graphql::Response, sqlx::SqlitePool) {
@@ -217,6 +238,57 @@ mod save_product {
 
         assert_eq!(row.title_en, "New title");
     }
+
+    #[tokio::test]
+    async fn cover_is_first() {
+        let db = crate::test_utils::setup_db().await.unwrap();
+        let schema = async_graphql::Schema::build(Queries, Mutations, EmptySubscription).finish();
+
+        for i in 1..4 {
+            let mut picture = entity::Picture::new_fixture();
+            picture.id = i.to_string();
+            picture.insert(&db).await.unwrap();
+        }
+
+        let mut product = ProductInput::new_fixture();
+        product.pictures = vec![1, 2, 3].iter().map(|id| id.into()).collect::<Vec<ID>>();
+        product.cover_id = ID::from("2");
+        
+        let request = make_request(&product).data(db.clone());
+
+        let response = schema.execute(request).await;
+
+        assert_eq!(response.errors.first(), None);
+
+        let pics = Picture::get_by_product_id(&db, &product.id).await.unwrap();
+        assert_eq!(pics.get(0).unwrap().id, ID::from("2"));
+    }
+
+    #[tokio::test]
+    async fn pictures() {
+        let db = crate::test_utils::setup_db().await.unwrap();
+        let schema = async_graphql::Schema::build(Queries, Mutations, EmptySubscription).finish();
+
+        for i in 1..4 {
+            let mut picture = entity::Picture::new_fixture();
+            picture.id = i.to_string();
+            picture.insert(&db).await.unwrap();
+        }
+
+        let mut product = ProductInput::new_fixture();
+        product.pictures = vec![3, 2, 1].iter().map(|id| id.into()).collect::<Vec<ID>>();
+        product.cover_id = ID::from("3");
+        
+        let request = make_request(&product).data(db.clone());
+
+        let response = schema.execute(request).await;
+
+        assert_eq!(response.errors.first(), None);
+
+        let pics = Picture::get_by_product_id(&db, &product.id).await.unwrap();
+        insta::assert_json_snapshot!(pics.iter().map(|p| p.id.to_string()).collect::<Vec<String>>());
+    }
+
 }
 
 #[cfg(test)]

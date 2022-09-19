@@ -1,4 +1,4 @@
-use crate::{graphql_schema::Schema, guard::RoleExctractor, image_storage::ImageStorage};
+use crate::{graphql_schema::Schema, guard::RoleExctractor, image_storage::ImageStorage, builder::Builder};
 use async_graphql_poem::{GraphQLRequest, GraphQLResponse};
 use poem::{handler, http::HeaderMap, web::Data};
 use sqlx::SqlitePool;
@@ -9,6 +9,7 @@ pub async fn handler(
     Data(db): Data<&SqlitePool>,
     Data(images): Data<&ImageStorage>,
     Data(role_extractor): Data<&RoleExctractor>,
+    Data(builder): Data<&Builder>,
     headers: &HeaderMap,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
@@ -18,7 +19,7 @@ pub async fn handler(
 
     log::debug!("req: {:?}", req);
 
-    let req = req.data(role).data(db.clone()).data(images.clone());
+    let req = req.data(role).data(db.clone()).data(images.clone()).data(builder.clone());
     let resp: GraphQLResponse = schema.execute(req).await.into();
     log::debug!("resp: {:?}", resp.0);
     resp

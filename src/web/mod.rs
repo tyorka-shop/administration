@@ -21,7 +21,8 @@ pub async fn make_server(
     let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), port);
 
     let extractor = RoleExctractor::new(&cfg.secret, "http://localhost:50051".into());
-
+    let builder = crate::builder::Builder::new("/home/kazatca/tyorka.com");
+    
     let app = Route::new()
         .at("/graphql", post(gql::handler))
         .at("/upload", post(upload::handler))
@@ -29,7 +30,8 @@ pub async fn make_server(
         .data(extractor)
         .data(db)
         .data(cfg)
-        .data(images);
+        .data(images)
+        .data(builder);
 
     log::info!("GraphQL listening on {}", port);
     Server::new(TcpListener::bind(addr)).run(app)

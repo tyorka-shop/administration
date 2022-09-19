@@ -1,6 +1,6 @@
 use crate::{
-    graphql_types::{BlogPost, Product, User},
-    guard::{Role, RoleData},
+    graphql_types::{BlogPost, Product, User, Build},
+    guard::{Role, RoleData}, builder::Builder,
 };
 use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
@@ -31,18 +31,20 @@ impl Queries {
         Ok(entity::Product::get_all(db)
             .await
             .unwrap()
-            .iter()
+            .into_iter()
             .map(Product::from)
             .collect())
     }
 
     #[graphql(guard = "RoleData::admin()")]
-    async fn product(&self, ctx: &Context<'_>, id: ID) -> Result<Product> {
+    async fn product(&self, ctx: &Context<'_>, id: ID) -> Result<Option<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
         let product = entity::Product::get_by_id(db, &id.to_string())
-            .await
-            .unwrap();
-        Ok((&product).into())
+            .await;
+        match product {
+            Ok(product) => Ok(Some(Product::from(product))),
+            Err(_) => Ok(None),
+        }
     }
 
     #[graphql(guard = "RoleData::admin()")]
@@ -52,7 +54,7 @@ impl Queries {
         let products = entity::Product::get_shop(db)
             .await
             .unwrap()
-            .iter()
+            .into_iter()
             .map(Product::from)
             .collect();
         Ok(products)
@@ -65,7 +67,7 @@ impl Queries {
         let products = entity::Product::get_gallery(&db)
             .await
             .unwrap()
-            .iter()
+            .into_iter()
             .map(Product::from)
             .collect();
         Ok(products)
@@ -82,6 +84,44 @@ impl Queries {
             .map(BlogPost::from)
             .collect();
         Ok(posts)
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn current_build(&self, ctx: &Context<'_>) -> Result<Option<Build>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let builder = ctx.data::<Builder>().unwrap();
+        let id = builder.current_build();
+        match id {
+            Some(id) => {
+                let build = entity::Build::get_by_id(db, &id).await.unwrap();
+                Ok(Some(build.into()))
+            }
+            None => Ok(None),
+        }
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn publications(&self,  ctx: &Context<'_>) -> Result<Vec<Build>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+
+        let builds = entity::Build::get_all(&db)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(Build::from)
+            .collect();
+        Ok(builds)
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn publication(&self,  ctx: &Context<'_>, id: ID) -> Result<Option<Build>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+
+        let build = entity::Build::get_by_id(&db, &id.to_string()).await;
+        match build {
+            Ok(build) => Ok(Some(build.into())),
+            Err(_) => Ok(None),
+        }
     }
 }
 
@@ -315,8 +355,6 @@ mod picture_order {
 
         insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
-
-
 }
 
 #[cfg(test)]

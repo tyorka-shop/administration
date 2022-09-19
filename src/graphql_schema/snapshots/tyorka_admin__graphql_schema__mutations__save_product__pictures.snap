@@ -1,0 +1,9 @@
+---
+source: src/graphql_schema/mutations.rs
+expression: "pics.iter().map(|p| p.id.to_string()).collect::<Vec<String>>()"
+---
+[
+  "3",
+  "2",
+  "1"
+]

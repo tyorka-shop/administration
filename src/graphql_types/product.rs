@@ -15,8 +15,8 @@ pub struct Product {
     pub description: MultiLang,
 }
 
-impl From<&entity::Product> for Product {
-    fn from(row: &entity::Product) -> Self {
+impl From<entity::Product> for Product {
+    fn from(row: entity::Product) -> Self {
         Self {
             id: ID::from(&row.id),
             cover_id: row.cover_id.clone(),
