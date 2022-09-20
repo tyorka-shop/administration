@@ -4,7 +4,7 @@ mod types;
 
 #[tokio::main]
 async fn main() {
-
+  env_logger::init();
   let cfg = config::load("tyorka-admin");
 
   match cfg.insta {

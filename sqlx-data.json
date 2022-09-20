@@ -1,0 +1,855 @@
+{
+  "db": "SQLite",
+  "0106fb5dce316f6d75c071b228ffc963f1c1b2b9e3a562eba1a4ae1dcc957898": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "cover_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_en",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_ru",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "show_in_gallery",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "show_in_shop",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "description_en",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "description_ru",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "price",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n            SELECT `products`.* \n            FROM `products` \n            left join `entity_order` \n                on `entity_order`.`entity_id` = `products`.`id` and `entity_order`.`type` = \"shop\"\n            WHERE `products`.`show_in_shop` = 1\n            order by `entity_order`.`idx` asc\n            "
+  },
+  "0dc6437c9e12dc7a0a3ef5a9d152c97c0847ef40fcf65a68e48772fbfcf75007": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "cover_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_en",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_ru",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "show_in_gallery",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "show_in_shop",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "description_en",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "description_ru",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "price",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT * FROM `products`"
+  },
+  "0f63d4746a8c46f049c0d8171a05b7a1c19caa54adc0a3da849565b8694c7c37": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "replace into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
+  },
+  "10eb3e324407bd04ab0dc64f4d1fb14c52247d6ecd0bc4e0e86e8f6f3d014335": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "insert into `entity_order` (`entity_id`, `type`, `idx`) values ($1, $2, $3)"
+  },
+  "1656ab8189394cc5113e66ccc167c6cca58a02aae2c10fdc2976d007005f5dfa": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "update `build` set status = $2, date = $3, log = $4 where id = $1"
+  },
+  "19382ec9121c0a1abcfe8ace0cb7f4ce2542dd68e0a3637aa7e1e4e2ef5bf43d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "status",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "log",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "date",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT * FROM `build` WHERE id = $1"
+  },
+  "1e980103b4c072b8b7a1178b6b0345a252e4aa50a8e5f5b2b946386118bd46ee": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "update `products` set cover_id = $2, title_en = $3, title_ru = $4, description_en = $5, description_ru = $6, price = $7, show_in_gallery = $8, show_in_shop = $9 where id = $1"
+  },
+  "2490fc4a00ef4a12f166ba468de30874cb9812ede994e4b10dc19650d2c7eb56": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_size_width",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "original_size_height",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "crop_anchor_x",
+          "ordinal": 4,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_anchor_y",
+          "ordinal": 5,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_factor",
+          "ordinal": 6,
+          "type_info": "Float"
+        },
+        {
+          "name": "product_id",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "idx",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "select * from pictures where product_id = ? order by `idx`"
+  },
+  "27dab650b3390dd8c1d790f63f18fdadb9612de79b34fddfe64e5ce2b2112a0c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "cover_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_en",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_ru",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "show_in_gallery",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "show_in_shop",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "description_en",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "description_ru",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "price",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT * FROM `products` WHERE id = $1"
+  },
+  "2beec3e0ddbdfc740b6c310908091d1a1e39db6bd274b6071e3e27936138c068": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "update `pictures` set color = $2, original_size_width = $3, original_size_height = $4, crop_anchor_x = $5, crop_anchor_y = $6, crop_factor = $7, product_id = $8, idx = $9 where id = $1"
+  },
+  "3d099a6d0d32446b8765be57892681ddaaa425961eddb50545dd0de873480852": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_size_width",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "original_size_height",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "crop_anchor_x",
+          "ordinal": 4,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_anchor_y",
+          "ordinal": 5,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_factor",
+          "ordinal": 6,
+          "type_info": "Float"
+        },
+        {
+          "name": "product_id",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "idx",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT * FROM `pictures`"
+  },
+  "458892f58564126ac3be15d84d57f566a3a4d6970b2cb40f8d141c1f99ccb0c8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "insert or ignore into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
+  },
+  "486e473ee23408096b2758b187df56ba9492693fc91b1a9f12cedcbad4a70a97": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "delete from entity_order where `type` = $1"
+  },
+  "5a5e2fbba16158aa14965f9efaf2cb038a27cad9f965684a49de715bd69d9276": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "insert into `products` ( id, cover_id, title_en, title_ru, description_en, description_ru, price,\nshow_in_gallery, show_in_shop ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+  },
+  "5d4a7e87ce8e28b9185685e2a34ec7a70e60d3f43a8a9f27e8dee3b6cefe45a5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "insert or ignore into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
+  },
+  "82a2fc5bd6aadd8b84d7ebae997ddda63943ffc53e85ef4b5bf4edd9ee94dd82": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "update `build` set `status` = $2 where `id` = $1"
+  },
+  "8db1f14a9e89f71b361d7f7844e6ba497c55b85c7b47b8ae82711a49929d4c51": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "src",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT * FROM `blog`"
+  },
+  "8f79c304b7203879ca9358376fca66600ce5ff7bb4b24289b56e88c42e708fd5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "insert or ignore into `products` ( id, cover_id, title_en, title_ru, description_en, description_ru, price,\nshow_in_gallery, show_in_shop ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+  },
+  "8f933da9137a3abe78e12473f9d7214ae29f94e14cea93fa02720cafe6f3b594": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "update `blog` set src = $2, url = $3, color = $4 where id = $1"
+  },
+  "926533c91bfdb3af14d46f234ea56b5d8c83b8b991241d8104f684243576f67f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "replace into `products` ( id, cover_id, title_en, title_ru, description_en, description_ru, price,\nshow_in_gallery, show_in_shop ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+  },
+  "944d11f0f6213624e32edd11a90820008856d8750dc589e235f9154b3803e18f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "insert into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
+  },
+  "972094e124ad0ad067bd9cd0ad4fe34d94f939c732b9d24827f07013eeedc4ea": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "insert into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
+  },
+  "a8034084a8920e624c52c0c10426a0864700e51af3926eddff998e9f08608712": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "update pictures set product_id = $1, `idx` = $2 where id = $3"
+  },
+  "ab02d5ac9321fb898a1f3a35c0ca966a6b86884e78cff413c39e61ccbc413a9e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "update `build` set `log` = `log` || $1 || x'0a' where `id` = $2"
+  },
+  "b1991c4ee5cdddb1492032c2d07b721729b1958073c2ca17adbb108ec8197fea": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "replace into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
+  },
+  "b86ae9c80dc41a5eaf2e8d7882a357acf17f160da2cd67dfbb0014eadff0ce1e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "insert into `pictures` ( id, color, original_size_width, original_size_height, crop_anchor_x,\ncrop_anchor_y, crop_factor, product_id, idx ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+  },
+  "c5c074f2bfbe093efd54560559993903a0d4c50a824dc211e7fde6a22951d088": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "replace into `pictures` ( id, color, original_size_width, original_size_height, crop_anchor_x,\ncrop_anchor_y, crop_factor, product_id, idx ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+  },
+  "ced1923725f3a7891ff84a3f91c3b4da3ab1e97f2eecaa8763ac17a0b6987c72": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "cover_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_en",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_ru",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "show_in_gallery",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "show_in_shop",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "description_en",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "description_ru",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "price",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n            SELECT `products`.* \n            FROM `products` \n            left join `entity_order` \n                on `entity_order`.`entity_id` = `products`.`id` and `entity_order`.`type` = \"gallery\"\n            WHERE `products`.`show_in_gallery` = 1\n            order by `entity_order`.`idx` asc\n            "
+  },
+  "d4645126cdc96db5ea5b362d0c47f8f65c98c51e26ef7651c8b9fb74974604b8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "src",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT * FROM blog"
+  },
+  "d8b657d1ae7af693dcd0e7a30a8f1415740ea2393cfd994c69a052be0fb68bd3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "src",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT * FROM `blog` WHERE id = $1"
+  },
+  "e5072507db7f762a5c5c5bcaf7ab443b03460a4ab044e5d0d06d533f80d6e74b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_size_width",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "original_size_height",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "crop_anchor_x",
+          "ordinal": 4,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_anchor_y",
+          "ordinal": 5,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_factor",
+          "ordinal": 6,
+          "type_info": "Float"
+        },
+        {
+          "name": "product_id",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "idx",
+          "ordinal": 8,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT * FROM `pictures` WHERE id = $1"
+  },
+  "e7463978d822b8b38e354b9633ac26a9b8ed5cd08bba57162ed82dcd5c47b39b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "status",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "log",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "date",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT * FROM `build`"
+  },
+  "f481fa6333ea793b2dec64ff946f253213029bc2feee04ee76366ea07d2fa2f3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "insert or ignore into `pictures` ( id, color, original_size_width, original_size_height, crop_anchor_x,\ncrop_anchor_y, crop_factor, product_id, idx ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+  }
+}
