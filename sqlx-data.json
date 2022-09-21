@@ -456,6 +456,16 @@
     },
     "query": "insert or ignore into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
   },
+  "74582fea44432fc6efc46a0afbb433361562774ca7c0d6c8493ee70338bf649a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "delete from `pictures`"
+  },
   "82a2fc5bd6aadd8b84d7ebae997ddda63943ffc53e85ef4b5bf4edd9ee94dd82": {
     "describe": {
       "columns": [],
@@ -465,6 +475,16 @@
       }
     },
     "query": "update `build` set `status` = $2 where `id` = $1"
+  },
+  "863b25a6994c1dd60a416049521c2adfe0ecf76d5bf87f25d07e287d9e2764ef": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "delete from `blog`"
   },
   "8db1f14a9e89f71b361d7f7844e6ba497c55b85c7b47b8ae82711a49929d4c51": {
     "describe": {
@@ -552,6 +572,16 @@
     },
     "query": "insert into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
   },
+  "97b5602052fb2ee11998c0be2454d9688fa81de8ea3c58470f24b8a8673068bd": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "delete from `products`"
+  },
   "a8034084a8920e624c52c0c10426a0864700e51af3926eddff998e9f08608712": {
     "describe": {
       "columns": [],
@@ -561,6 +591,16 @@
       }
     },
     "query": "update pictures set product_id = $1, `idx` = $2 where id = $3"
+  },
+  "a825e5698cffabdb64f9ca82a021bceeada20300b8e0b6e4987b4948823988bc": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "delete from `build`"
   },
   "ab02d5ac9321fb898a1f3a35c0ca966a6b86884e78cff413c39e61ccbc413a9e": {
     "describe": {

@@ -89,6 +89,11 @@ pub fn derive_from_struct(input: TokenStream) -> TokenStream {
         table_name, fields_list, values
     );
 
+    let delete_all_sql = format!(
+        "delete from `{}`",
+        table_name
+    );
+
     TokenStream::from(quote! {
         impl #struct_name {
 
@@ -149,6 +154,10 @@ pub fn derive_from_struct(input: TokenStream) -> TokenStream {
                     ).execute(pool)
                     .await?
                 )
+            }
+
+            pub async fn clear(pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
+                Ok(sqlx::query!(#delete_all_sql).execute(pool).await?)
             }
         }
     })

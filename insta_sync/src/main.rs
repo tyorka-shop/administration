@@ -27,7 +27,7 @@ async fn main() {
       .await
       .unwrap();
   
-      sqlx::query!("delete from blog").execute(&db).await.unwrap();
+      entity::BlogPost::clear(&db).await.unwrap();
   
       for post in posts {
           post.insert_or_ignore(&db).await.unwrap();
