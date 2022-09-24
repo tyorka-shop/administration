@@ -1,5 +1,5 @@
 
-#[derive(macros::Entity, Debug)]
+#[derive(macros::Entity, Debug, Clone)]
 #[table_name = "build"]
 pub struct Build {
   pub id: String,

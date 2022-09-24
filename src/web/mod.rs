@@ -1,7 +1,7 @@
 mod gql;
 mod upload;
 
-use poem::{listener::TcpListener, post, EndpointExt, Route, Server};
+use poem::{listener::TcpListener, post, EndpointExt, Route, Server, middleware::Cors, endpoint::StaticFilesEndpoint};
 use sqlx::SqlitePool;
 use std::{future::Future, net::SocketAddr, str::FromStr};
 
@@ -20,8 +20,10 @@ pub async fn make_server(
     let builder = crate::builder::Builder::new("/home/kazatca/tyorka.com");
 
     let app = Route::new()
+        .nest("/static/images", StaticFilesEndpoint::new(&cfg.images_folder))
         .at("/graphql", post(gql::handler))
         .at("/upload", post(upload::handler))
+        .with(Cors::new().allow_origins(cfg.cors_allowed_origins.clone()).allow_credentials(true))
         .data(schema)
         .data(extractor)
         .data(db)

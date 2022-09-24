@@ -1,6 +1,7 @@
 use crate::{
-    graphql_types::{BlogPost, Product, User, Build},
-    guard::{Role, RoleData}, builder::Builder,
+    builder::Builder,
+    graphql_types::{BlogPost, Build, Picture, Product, User},
+    guard::{Role, RoleData},
 };
 use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
@@ -13,15 +14,14 @@ impl Queries {
         Ok("Ok".into())
     }
 
+    #[graphql(guard = "RoleData::admin()")]
     async fn user(&self, ctx: &Context<'_>) -> Result<User> {
         let role = ctx.data::<Role>().unwrap();
         match role {
             Role::Admin(email) => Ok(User {
                 email: email.clone(),
             }),
-            _ => Ok(User {
-                email: "client".into(),
-            }),
+            _ => Err("Unauthorized".into()),
         }
     }
 
@@ -39,10 +39,19 @@ impl Queries {
     #[graphql(guard = "RoleData::admin()")]
     async fn product(&self, ctx: &Context<'_>, id: ID) -> Result<Option<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        let product = entity::Product::get_by_id(db, &id.to_string())
-            .await;
+        let product = entity::Product::get_by_id(db, &id.to_string()).await;
         match product {
             Ok(product) => Ok(Some(Product::from(product))),
+            Err(_) => Ok(None),
+        }
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn picture(&self, ctx: &Context<'_>, id: ID) -> Result<Option<Picture>> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        let pic = entity::Picture::get_by_id(db, &id.to_string()).await;
+        match pic {
+            Ok(pic) => Ok(Some(Picture::from(pic))),
             Err(_) => Ok(None),
         }
     }
@@ -101,10 +110,11 @@ impl Queries {
     }
 
     #[graphql(guard = "RoleData::admin()")]
-    async fn publications(&self,  ctx: &Context<'_>) -> Result<Vec<Build>> {
+    async fn publications(&self, ctx: &Context<'_>) -> Result<Vec<Build>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
-        let builds = entity::Build::get_all(&db)
+        let builds = sqlx::query_as!(entity::Build, "SELECT * FROM `build` order by `date` desc")
+            .fetch_all(db)
             .await
             .unwrap()
             .into_iter()
@@ -114,7 +124,7 @@ impl Queries {
     }
 
     #[graphql(guard = "RoleData::admin()")]
-    async fn publication(&self,  ctx: &Context<'_>, id: ID) -> Result<Option<Build>> {
+    async fn publication(&self, ctx: &Context<'_>, id: ID) -> Result<Option<Build>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
         let build = entity::Build::get_by_id(&db, &id.to_string()).await;
@@ -122,6 +132,18 @@ impl Queries {
             Ok(build) => Ok(Some(build.into())),
             Err(_) => Ok(None),
         }
+    }
+
+    #[graphql(guard = "RoleData::admin()")]
+    async fn is_draft(&self, _ctx: &Context<'_>) -> Result<bool> {
+        // let db = ctx.data::<SqlitePool>().unwrap();
+        Ok(true)
+    }
+    
+    #[graphql(guard = "RoleData::admin()")]
+    async fn publication_duration(&self, _ctx: &Context<'_>) -> Result<i32> {
+        // let db = ctx.data::<SqlitePool>().unwrap();
+        Ok(60_000)
     }
 }
 
@@ -315,7 +337,7 @@ mod picture_order {
         response
     }
 
-    async fn setup(list: [i64;2]) -> Result<SqlitePool>{
+    async fn setup(list: [i64; 2]) -> Result<SqlitePool> {
         let db = crate::test_utils::setup_db().await.unwrap();
 
         let product = entity::Product::new_fixture();
@@ -326,7 +348,7 @@ mod picture_order {
             let mut picture = entity::Picture::new_fixture();
             picture.id = id;
             picture.product_id = Some(product.id.clone());
-            picture.idx = Some(list[i-1]);
+            picture.idx = Some(list[i - 1]);
 
             picture.insert(&db).await.unwrap();
         }
@@ -336,7 +358,7 @@ mod picture_order {
 
     #[tokio::test]
     async fn asc() {
-        let db = setup([1,2]).await.unwrap();
+        let db = setup([1, 2]).await.unwrap();
 
         let query = r#"query Products { products { pictures { id } } }"#;
 
@@ -347,7 +369,7 @@ mod picture_order {
 
     #[tokio::test]
     async fn desc() {
-        let db = setup([2,1]).await.unwrap();
+        let db = setup([2, 1]).await.unwrap();
 
         let query = r#"query Products { products { pictures { id } } }"#;
 

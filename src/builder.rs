@@ -40,25 +40,30 @@ impl Builder {
         }
     }
 
-    pub fn build(&self, db: &SqlitePool) -> Result<String, Error> {
+    pub fn build(&self, db: &SqlitePool) -> Result<entity::Build, Error> {
         log::debug!("Starting build");
         let build = lock().unwrap();
+
+        let mut environment = std::env::vars()
+            .map(|(k, v)| {(OsString::from(k), OsString::from(v))})
+            .collect::<Vec<_>>();
+        environment.push((OsString::from("XDG_CONFIG_HOME"), OsString::from(self.public_site_folder.clone())));
         
-        let mut x = Popen::create(
+        let mut cmd = Popen::create(
             &["make"],
             PopenConfig {
                 stdout: Redirection::Pipe,
                 stderr: Redirection::Merge,
                 cwd: Some(OsString::from(self.public_site_folder.clone())),
-                env: Some(vec![(OsString::from("XDG_CONFIG_HOME"), OsString::from(self.public_site_folder.clone()))]),
+                env: Some(environment),
                 ..Default::default()
             },
         )
         .unwrap();
 
-        let reader = BufReader::new(x.stdout.take().unwrap());
+        let reader = BufReader::new(cmd.stdout.take().unwrap());
         let db = db.clone();
-        let build_id = build.id.clone();
+        let result = build.clone();
         thread::spawn(move || {
             let rt = tokio::runtime::Runtime::new().unwrap();
             rt.block_on(async {
@@ -68,7 +73,7 @@ impl Builder {
                 store_output(&db, &build.id, &line.unwrap());
             }
 
-            let is_ok = match x.wait().unwrap() {
+            let is_ok = match cmd.wait().unwrap() {
                 subprocess::ExitStatus::Exited(0) => true,
                 _ => false,
             };
@@ -77,7 +82,7 @@ impl Builder {
             log::debug!("Build finished");
         });
 
-        Ok(build_id)
+        Ok(result)
     }
 }
 

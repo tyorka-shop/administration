@@ -6,8 +6,10 @@ use async_graphql::ID;
 use serde::Serialize;
 
 #[derive(Debug, Serialize, async_graphql::SimpleObject)]
+#[serde(rename_all = "camelCase")]
 pub struct Picture {
     pub id: ID,
+    pub src: String,
     pub color: String,
     pub original_size: PictureSize,
     pub crop: Crop,
@@ -19,7 +21,8 @@ pub struct Picture {
 impl From<entity::Picture> for Picture {
     fn from(row: entity::Picture) -> Self {
         Self {
-            id: ID::from(row.id),
+            id: ID::from(row.id.clone()),
+            src: row.id,
             color: row.color,
             original_size: PictureSize {
                 width: row.original_size_width,
@@ -41,6 +44,7 @@ impl Picture {
     pub fn new(filename: &str, width: i64, height: i64, dominant_color: &str, crop: &Crop) -> Self {
         Self {
             id: ID::from(filename),
+            src: filename.to_string(),
             color: dominant_color.to_string(),
             original_size: PictureSize { width, height },
             crop: crop.clone(),

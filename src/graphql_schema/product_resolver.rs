@@ -1,13 +1,13 @@
 use async_graphql::{ComplexObject, Context};
 use sqlx::{Result, SqlitePool};
 
-use crate::graphql_types::{MultiLang, Picture, Product};
+use crate::graphql_types::{MultiLang, Picture, Product, ProductState};
 
 #[ComplexObject]
 impl Product {
     // back compatibility
-    async fn state(&self) -> Result<String> {
-        Ok("DRAFT".into())
+    async fn state(&self) -> Result<ProductState> {
+        Ok(ProductState::Draft)
     }
 
     async fn cover(&self, ctx: &Context<'_>) -> Result<Picture> {

@@ -35,6 +35,8 @@ pub async fn handler(
 
             let content_type: String = ContentType::json().to_string();
 
+            // let response = to_value(pic).unwrap();
+
             return Response::builder()
                 .content_type(&content_type)
                 .body(serde_json::to_string(&pic).unwrap());

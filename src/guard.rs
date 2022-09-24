@@ -46,7 +46,7 @@ impl RoleExctractor {
         match headers.get("authorization") {
             Some(token) => match self
                 .session_service_client
-                .verify(token.to_str().unwrap())
+                .verify(&token.to_str().unwrap().replace("Bearer", "").trim())
                 .await
             {
                 Ok(email) => {
@@ -87,7 +87,7 @@ impl Guard for RoleData {
         match expect {
             Role::Admin(_) => match actual {
                 Role::Admin(_) => Ok(()),
-                _ => Err("Permission denied".into()),
+                _ => Err("Unauthorized".into()),
             },
             _ => Ok(()),
         }

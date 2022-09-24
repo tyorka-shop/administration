@@ -1,4 +1,4 @@
-use super::multi_lang::MultiLang;
+use super::{multi_lang::MultiLang, ProductState};
 use async_graphql::ID;
 use serde::Serialize;
 
@@ -38,6 +38,7 @@ impl From<entity::Product> for Product {
 #[derive(async_graphql::InputObject, Serialize, Clone)]
 pub struct ProductInput {
     pub id: ID,
+    pub state: ProductState,
     pub pictures: Vec<ID>,
     pub cover_id: ID,
     pub title: MultiLang,
@@ -69,6 +70,7 @@ impl ProductInput {
         let pic_id = ID::from(format!("{:x}", md5::compute("cover_id")));
         Self {
             id: "07d7b72c-5b2e-4a35-a257-158496993dcc".into(),
+            state: ProductState::Draft,
             pictures: vec![pic_id.clone()],
             cover_id: pic_id,
             title: MultiLang {

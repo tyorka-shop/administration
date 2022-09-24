@@ -2,7 +2,7 @@ use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
 
 use crate::{
-    graphql_types::{Crop, Picture, Product, ProductInput},
+    graphql_types::{Crop, Picture, Product, ProductInput, Build},
     image_storage::ImageStorage, builder::Builder,
     guard::RoleData
 };
@@ -115,12 +115,13 @@ impl Mutations {
     }
 
     #[graphql(guard = "RoleData::admin()")]
-    async fn publish(&self, ctx: &Context<'_>) -> Result<ID> {
+    async fn publish(&self, ctx: &Context<'_>) -> Result<Build> {
         let db = ctx.data::<SqlitePool>().unwrap();
         let builder = ctx.data::<Builder>().unwrap();
 
-        let id = builder.build(&db).unwrap();
-        Ok(id.into())
+        let build = builder.build(&db).unwrap();
+        
+        Ok(build.into())
     }
 }
 
