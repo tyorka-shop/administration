@@ -350,6 +350,42 @@
     },
     "query": "update `pictures` set color = $2, original_size_width = $3, original_size_height = $4, crop_anchor_x = $5, crop_anchor_y = $6, crop_factor = $7, product_id = $8, idx = $9 where id = $1"
   },
+  "335bfc76321a5675baaded72e541cfc249d3840232e2c9eb45a5397050fa0b12": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "status",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "log",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "date",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT * FROM `build` order by `date` desc"
+  },
   "3d099a6d0d32446b8765be57892681ddaaa425961eddb50545dd0de873480852": {
     "describe": {
       "columns": [
