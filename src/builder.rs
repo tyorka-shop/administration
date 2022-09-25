@@ -127,7 +127,7 @@ fn store_output(db: &SqlitePool, id: &str, buf: &str) {
 }
 
 fn store_status(db: &SqlitePool, id: &str, is_ok: bool) {
-    let rt = tokio::runtime::Runtime::new().unwrap();
+    let rt = tokio::runtime::Runtime::new().expect("Can't create runtime for store_status");
     rt.block_on(async {
         let status = if is_ok { "DONE" } else { "FAILED" };
         sqlx::query!(
