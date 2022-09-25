@@ -14,8 +14,8 @@ RUN cargo build --release --workspace \
 
 
 FROM node:14-bullseye
+LABEL org.opencontainers.image.source https://github.com/tyorka-shop/administration
 COPY --from=builder /build/tyorka-admin /build/insta_sync /usr/local/bin/
-
 EXPOSE 3000
 
 CMD ["tyorka-admin"]
