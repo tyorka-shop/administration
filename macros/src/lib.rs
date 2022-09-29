@@ -1,17 +1,18 @@
 extern crate proc_macro;
-use proc_macro::TokenStream;
+use proc_macro::{TokenStream};
+use proc_macro2::Ident;
 use quote::quote;
 use syn::{
     parse_macro_input, Attribute, Data, DataStruct, DeriveInput, Fields, Lit, Meta, MetaNameValue,
 };
 
-fn placeholders(max: usize) -> String {
-    (1..max + 1)
-        .into_iter()
-        .map(|s| format!("${}", s))
-        .collect::<Vec<String>>()
-        .join(", ")
-}
+mod consts;
+mod get_all;
+mod get_by_id;
+mod insert;
+mod insert_or_update;
+mod insert_all;
+mod clear;
 
 fn get_table_name(attrs: Vec<Attribute>) -> String {
     let meta = attrs.get(0).unwrap().parse_meta().unwrap();
@@ -38,127 +39,38 @@ pub fn derive_from_struct(input: TokenStream) -> TokenStream {
     };
 
     // Attributes -> field names
-    let fields_for_query = fields.iter().map(|field| &field.ident);
-    let fields_for_insert = fields.iter().map(|field| &field.ident);
-    let fields_for_replace = fields.iter().map(|field| &field.ident);
-    let fields_for_ignore = fields.iter().map(|field| &field.ident);
+    let fields = fields.iter().filter_map(|field| field.ident.clone()).collect::<Vec<Ident>>();
 
     let struct_name = &input.ident;
 
-    let field_length = fields_for_query.len();
-    // ( $1, $2)
-    let values = placeholders(field_length);
-
-    let fields_list = quote! {
-        #( #fields_for_query ),*
-    };
     let table_name = get_table_name(input.attrs);
 
-    let select_all_sql = format!("SELECT * FROM `{}`", table_name);
-    let select_by_id_sql = format!("SELECT * FROM `{}` WHERE id = $1", table_name);
+    let get_by_id = get_by_id::make(struct_name, &table_name);
 
-    let insert_sql = format!(
-        "insert into `{}` ( {} ) values ( {} )",
-        table_name, fields_list, values
-    );
+    let get_all = get_all::make(struct_name, &table_name);
 
-    let update_fields = fields
-        .iter()
-        .filter(|&field| field.ident.clone().map(|value| value.to_string()) != Some("id".into()))
-        .enumerate()
-        .map(|(i, field)| format!("{} = ${}", &field.ident.clone().unwrap(), i + 2)).collect::<Vec<String>>().join(", ");
+    let insert = insert::make(&table_name, &fields);
 
+    let insert_all = insert_all::make(&table_name, &fields);
 
-    let update_sql = format!(
-        "update `{}` set {} where id = $1",
-        table_name, update_fields
-    );
+    let insert_or_update = insert_or_update::make(&table_name, &fields);
 
-    let fields_for_update = fields
-        .iter()
-        .filter(|&field| field.ident.clone().map(|value| value.to_string()) != Some("id".into()))
-        .map(|field| &field.ident);
-
-    let insert_or_ignore_sql = format!(
-        "insert or ignore into `{}` ( {} ) values ( {} )",
-        table_name, fields_list, values
-    );
-
-    let replace_sql = format!(
-        "replace into `{}` ( {} ) values ( {} )",
-        table_name, fields_list, values
-    );
-
-    let delete_all_sql = format!(
-        "delete from `{}`",
-        table_name
-    );
+    let clear = clear::make(&table_name);
 
     TokenStream::from(quote! {
         impl #struct_name {
 
-            pub async fn get_by_id(pool: &sqlx::SqlitePool, id: &str) -> Result<#struct_name, sqlx::Error> {
-                sqlx::query_as!(#struct_name, #select_by_id_sql, id)
-                    .fetch_one(pool)
-                    .await
-                    .map(|row| row.into())
-            }
+            #get_by_id
 
-            pub async fn get_all(pool: &sqlx::SqlitePool) -> Result<Vec<#struct_name>, sqlx::Error> {
-                sqlx::query_as!(#struct_name, #select_all_sql)
-                    .fetch_all(pool)
-                    .await
-                    .map(|rows| rows.into_iter().map(|row| row.into()).collect())
-            }
+            #get_all
 
-            pub async fn insert(&self, pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
-                Ok(sqlx::query!(#insert_sql,
-                #(
-                    self.#fields_for_insert,
-                )*
-                    ).execute(pool)
-                    .await?
-                )
-            }
+            #insert
 
-            pub async fn insert_or_update(&self, pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
-                let result = sqlx::query!(#update_sql,
-                    self.id,
-                #(
-                    self.#fields_for_update,
-                )*
-                    ).execute(pool)
-                    .await?;
-                
-                if result.rows_affected() > 0 {
-                    return Ok(result);
-                }
+            #insert_all
 
-                self.insert(pool).await
-            }
+            #insert_or_update
 
-            pub async fn insert_or_ignore(&self, pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
-                Ok(sqlx::query!(#insert_or_ignore_sql,
-                #(
-                    self.#fields_for_ignore,
-                )*
-                    ).execute(pool)
-                    .await?
-                )
-            }
-            pub async fn insert_or_replace(&self, pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
-                Ok(sqlx::query!(#replace_sql,
-                #(
-                    self.#fields_for_replace,
-                )*
-                    ).execute(pool)
-                    .await?
-                )
-            }
-
-            pub async fn clear(pool: &sqlx::SqlitePool) -> eyre::Result<sqlx::sqlite::SqliteQueryResult> {
-                Ok(sqlx::query!(#delete_all_sql).execute(pool).await?)
-            }
+            #clear
         }
     })
 }

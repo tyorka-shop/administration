@@ -33,7 +33,14 @@ impl Mutations {
         }
 
         entity.insert_or_update(db).await?;
+        
+        let mut tx = db.begin().await?;
+
         let cover_id = product.cover_id.to_string();
+
+        sqlx::query!("delete from `product_pictures` where product_id = ?", entity.id)
+            .execute(&mut tx)
+            .await?;
 
         for (i, picture_id) in product.pictures.iter().enumerate() {
             let product_id = product.id.to_string();
@@ -45,14 +52,16 @@ impl Mutations {
                 index
             };
             sqlx::query!(
-                "update pictures set product_id = $1, `idx` = $2 where id = $3",
+                "insert into `product_pictures` (`product_id`, `picture_id`, `idx`) values ($1, $2, $3)",
                 product_id,
+                picture_id,
                 index,
-                picture_id
             )
-            .execute(db)
+            .execute(&mut tx)
             .await?;
         }
+
+        tx.commit().await?;
 
         Ok(Product::from(entity))
     }
@@ -116,8 +125,16 @@ impl Mutations {
 
     #[graphql(guard = "RoleData::admin()")]
     async fn publish(&self, ctx: &Context<'_>) -> Result<Build> {
+        let cfg = ctx.data::<config::Config>().unwrap();
         let db = ctx.data::<SqlitePool>().unwrap();
         let builder = ctx.data::<Builder>().unwrap();
+
+        match insta_sync::sync(&cfg, &db).await {
+            Err(e) => {
+                log::error!("Error while syncing instagram: {}", e);
+            },
+            _ => {},
+        };
 
         let build = builder.build(&db).unwrap();
         

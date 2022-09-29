@@ -1,1 +1,0 @@
-alter table `pictures` drop column `idx`;

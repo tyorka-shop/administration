@@ -60,6 +60,8 @@ impl From<&ProductInput> for entity::Product {
             show_in_gallery: input.show_in_gallery,
             show_in_shop: input.show_in_shop,
             cover_id: input.cover_id.to_string(),
+            updated_at: chrono::Utc::now().naive_utc(),
+            created_at: chrono::Utc::now().naive_utc(),
         }
     }
 }

@@ -12,6 +12,8 @@ pub struct Product {
     pub price: Option<i64>,
     pub show_in_gallery: bool,
     pub show_in_shop: bool,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
 }
 
 impl Product {
@@ -26,6 +28,8 @@ impl Product {
             price: None,
             show_in_gallery: true,
             show_in_shop: false,
+            created_at: chrono::NaiveDateTime::from_timestamp(0, 0),
+            updated_at: chrono::NaiveDateTime::from_timestamp(0, 0),
         }
     }
 
@@ -110,7 +114,10 @@ impl Product {
         Ok(())
     }
 
-    pub async fn save_gallery_order(db: &SqlitePool, list: &Vec<String>) -> Result<(), sqlx::Error> {
+    pub async fn save_gallery_order(
+        db: &SqlitePool,
+        list: &Vec<String>,
+    ) -> Result<(), sqlx::Error> {
         Self::save_order(db, "gallery", list).await
     }
 

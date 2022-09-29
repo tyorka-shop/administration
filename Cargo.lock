@@ -1354,6 +1354,7 @@ dependencies = [
 name = "macros"
 version = "0.1.0"
 dependencies = [
+ "proc-macro2",
  "quote",
  "syn",
 ]
@@ -2341,6 +2342,7 @@ dependencies = [
  "bitflags",
  "byteorder",
  "bytes 1.2.1",
+ "chrono",
  "crc",
  "crossbeam-queue",
  "dotenvy",
@@ -2899,6 +2901,7 @@ dependencies = [
  "image",
  "image_processing",
  "insta",
+ "insta_sync",
  "lazy_static",
  "log",
  "macros",

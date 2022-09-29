@@ -3,9 +3,8 @@ edition = "2021"
 name = "insta_sync"
 version = "0.1.0"
 
-[[bin]]
+[lib]
 name = "insta_sync"
-path = "src/main.rs"
 
 [dependencies]
 log = "0.4.17"

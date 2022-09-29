@@ -1,0 +1,14 @@
+---
+source: src/graphql_schema/queries.rs
+expression: result.data.into_json().unwrap()
+---
+{
+  "products": [
+    {
+      "id": "17d7b72c-5b2e-4a35-a257-158496993dcc"
+    },
+    {
+      "id": "07d7b72c-5b2e-4a35-a257-158496993dcc"
+    }
+  ]
+}

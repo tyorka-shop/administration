@@ -28,12 +28,15 @@ impl Queries {
     #[graphql(guard = "RoleData::admin()")]
     async fn products(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        Ok(entity::Product::get_all(db)
-            .await
-            .unwrap()
+
+        let products = sqlx::query_as!(entity::Product, "select * from `products` order by `created_at` desc")
+            .fetch_all(db)
+            .await?
             .into_iter()
             .map(Product::from)
-            .collect())
+            .collect();
+
+        Ok(products)
     }
 
     #[graphql(guard = "RoleData::admin()")]
@@ -187,7 +190,7 @@ mod role {
 
         assert_eq!(
             response.errors.first().unwrap().message,
-            "Permission denied"
+            "Unauthorized"
         );
     }
 }
@@ -233,16 +236,44 @@ mod products {
     }
 
     #[tokio::test]
+    pub async fn order() {
+        let db = crate::test_utils::setup_db().await.unwrap();
+
+        let mut product = entity::Product::new_fixture();
+        product.id = "07d7b72c-5b2e-4a35-a257-158496993dcc".into();
+        product.created_at = chrono::NaiveDateTime::from_timestamp(1_000_000_000, 0);
+        product.insert_all(&db).await.unwrap();
+        
+        product = entity::Product::new_fixture();
+        product.id = "17d7b72c-5b2e-4a35-a257-158496993dcc".into();
+        product.created_at = chrono::NaiveDateTime::from_timestamp(2_000_000_000, 0);
+        product.insert_all(&db).await.unwrap();
+
+        let query = r#"query Products { products { id } }"#;
+
+        let result = request(Request::new(query), &db).await;
+
+        assert_eq!(result.errors.first(), None);
+
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
+    }
+
+    #[tokio::test]
     pub async fn pictures() {
         let db = crate::test_utils::setup_db().await.unwrap();
 
         let product = entity::Product::new_fixture();
 
-        let mut picture = entity::Picture::new_fixture();
-        picture.product_id = Some(product.id.clone());
+        let picture = entity::Picture::new_fixture();
 
         picture.insert(&db).await.unwrap();
         product.insert(&db).await.unwrap();
+
+        sqlx::query!(
+            "INSERT INTO `product_pictures` (`product_id`, `picture_id`, `idx`) VALUES ($1, $2, 0)",
+            product.id,
+            picture.id
+        ).execute(&db).await.unwrap();
 
         let query = r#"query Products { products { pictures { id } } }"#;
 
@@ -347,10 +378,18 @@ mod picture_order {
             let id = i.to_string();
             let mut picture = entity::Picture::new_fixture();
             picture.id = id;
-            picture.product_id = Some(product.id.clone());
-            picture.idx = Some(list[i - 1]);
 
             picture.insert(&db).await.unwrap();
+
+            sqlx::query!(
+                r#"
+                INSERT INTO `product_pictures` (`product_id`, `picture_id`, `idx`)
+                VALUES ($1, $2, $3)
+                "#,
+                product.id,
+                picture.id,
+                list[i - 1]
+            ).execute(&db).await.unwrap();
         }
 
         Ok(db)

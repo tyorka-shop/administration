@@ -8,8 +8,6 @@ pub struct Picture {
     pub crop_anchor_x: f64,
     pub crop_anchor_y: f64,
     pub crop_factor: f64,
-    pub product_id: Option<String>,
-    pub idx: Option<i64>,
 }
 
 impl Picture {
@@ -22,8 +20,6 @@ impl Picture {
           crop_anchor_x: 0.5,
           crop_anchor_y: 0.5,
           crop_factor: 1.0,
-          product_id: None,
-          idx: None,
       }
   }
 }

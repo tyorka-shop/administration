@@ -13,9 +13,6 @@ pub struct Picture {
     pub color: String,
     pub original_size: PictureSize,
     pub crop: Crop,
-    #[serde(skip_serializing)]
-    #[graphql(skip)]
-    pub product_id: Option<String>,
 }
 
 impl From<entity::Picture> for Picture {
@@ -35,7 +32,6 @@ impl From<entity::Picture> for Picture {
                 },
                 factor: row.crop_factor,
             },
-            product_id: row.product_id,
         }
     }
 }
@@ -48,7 +44,6 @@ impl Picture {
             color: dominant_color.to_string(),
             original_size: PictureSize { width, height },
             crop: crop.clone(),
-            product_id: None,
         }
     }
 }
@@ -63,8 +58,6 @@ impl From<&Picture> for entity::Picture {
             crop_anchor_x: pic.crop.anchor.x,
             crop_anchor_y: pic.crop.anchor.y,
             crop_factor: pic.crop.factor,
-            product_id: pic.product_id.clone(),
-            idx: None,
         }
     }
 }
@@ -73,7 +66,7 @@ impl Picture {
     pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &ID) -> sqlx::Result<Vec<Self>> {
         let rows = sqlx::query_as!(
             entity::Picture,
-            "select * from pictures where product_id = ? order by `idx`",
+            "select p.* from pictures p join product_pictures pp on pp.picture_id = p.id where pp.product_id = ? order by pp.`idx`",
             id.0
         )
         .fetch_all(db)

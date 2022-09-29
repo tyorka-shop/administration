@@ -47,6 +47,16 @@
           "name": "price",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 9,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 10,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
@@ -58,7 +68,9 @@
         false,
         false,
         false,
-        true
+        true,
+        false,
+        false
       ],
       "parameters": {
         "Right": 0
@@ -113,6 +125,16 @@
           "name": "price",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 9,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 10,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
@@ -124,23 +146,15 @@
         false,
         false,
         false,
-        true
+        true,
+        false,
+        false
       ],
       "parameters": {
         "Right": 0
       }
     },
     "query": "SELECT * FROM `products`"
-  },
-  "0f63d4746a8c46f049c0d8171a05b7a1c19caa54adc0a3da849565b8694c7c37": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "replace into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
   },
   "10eb3e324407bd04ab0dc64f4d1fb14c52247d6ecd0bc4e0e86e8f6f3d014335": {
     "describe": {
@@ -152,15 +166,15 @@
     },
     "query": "insert into `entity_order` (`entity_id`, `type`, `idx`) values ($1, $2, $3)"
   },
-  "1656ab8189394cc5113e66ccc167c6cca58a02aae2c10fdc2976d007005f5dfa": {
+  "18b97951608df5be3d8c971864cadfd93d7aacf1f537d847ab1287e696971207": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 4
+        "Right": 7
       }
     },
-    "query": "update `build` set status = $2, date = $3, log = $4 where id = $1"
+    "query": "insert into `pictures` ( `id`, `color`, `original_size_width`, `original_size_height`, `crop_anchor_x`, `crop_anchor_y`, `crop_factor` ) values ( $1, $2, $3, $4, $5, $6, $7 )"
   },
   "19382ec9121c0a1abcfe8ace0cb7f4ce2542dd68e0a3637aa7e1e4e2ef5bf43d": {
     "describe": {
@@ -198,17 +212,7 @@
     },
     "query": "SELECT * FROM `build` WHERE id = $1"
   },
-  "1e980103b4c072b8b7a1178b6b0345a252e4aa50a8e5f5b2b946386118bd46ee": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 9
-      }
-    },
-    "query": "update `products` set cover_id = $2, title_en = $3, title_ru = $4, description_en = $5, description_ru = $6, price = $7, show_in_gallery = $8, show_in_shop = $9 where id = $1"
-  },
-  "2490fc4a00ef4a12f166ba468de30874cb9812ede994e4b10dc19650d2c7eb56": {
+  "1a9f4fd7102392927c7c8a0ba8903597f3e8707c25db3cbb3540db65e9f725e9": {
     "describe": {
       "columns": [
         {
@@ -245,16 +249,6 @@
           "name": "crop_factor",
           "ordinal": 6,
           "type_info": "Float"
-        },
-        {
-          "name": "product_id",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "idx",
-          "ordinal": 8,
-          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -264,15 +258,33 @@
         false,
         false,
         false,
-        false,
-        true,
-        true
+        false
       ],
       "parameters": {
         "Right": 1
       }
     },
-    "query": "select * from pictures where product_id = ? order by `idx`"
+    "query": "select p.* from pictures p join product_pictures pp on pp.picture_id = p.id where pp.product_id = ? order by pp.`idx`"
+  },
+  "200626ee7f16fb76b430a8eac7f77b0f94785afe0262328657f58749f16eef69": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "update `products` set `cover_id` = $2, `title_en` = $3, `title_ru` = $4, `description_en` = $5, `description_ru` = $6, `price` = $7, `show_in_gallery` = $8, `show_in_shop` = $9, `updated_at` = datetime('now') where id = $1"
+  },
+  "25d2479f8f10d28a9329ca71764192a8ee4dc931281c114001b56415577bc37a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "delete from `product_pictures` where product_id = ?"
   },
   "27dab650b3390dd8c1d790f63f18fdadb9612de79b34fddfe64e5ce2b2112a0c": {
     "describe": {
@@ -321,6 +333,16 @@
           "name": "price",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 9,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 10,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
@@ -332,7 +354,9 @@
         false,
         false,
         false,
-        true
+        true,
+        false,
+        false
       ],
       "parameters": {
         "Right": 1
@@ -340,15 +364,25 @@
     },
     "query": "SELECT * FROM `products` WHERE id = $1"
   },
-  "2beec3e0ddbdfc740b6c310908091d1a1e39db6bd274b6071e3e27936138c068": {
+  "2bbd63528fa5ac66f7edc2645ba19bc3d740b2ed5aba998faf4677dcd3c3b96a": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 9
+        "Right": 4
       }
     },
-    "query": "update `pictures` set color = $2, original_size_width = $3, original_size_height = $4, crop_anchor_x = $5, crop_anchor_y = $6, crop_factor = $7, product_id = $8, idx = $9 where id = $1"
+    "query": "update `build` set `status` = $2, `date` = $3, `log` = $4 where id = $1"
+  },
+  "2bfb07be872264a2f1e088aa1ba9807b5bb3e1bf9e4842be5930b46bc876af54": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "update `pictures` set `color` = $2, `original_size_width` = $3, `original_size_height` = $4, `crop_anchor_x` = $5, `crop_anchor_y` = $6, `crop_factor` = $7 where id = $1"
   },
   "335bfc76321a5675baaded72e541cfc249d3840232e2c9eb45a5397050fa0b12": {
     "describe": {
@@ -423,16 +457,6 @@
           "name": "crop_factor",
           "ordinal": 6,
           "type_info": "Float"
-        },
-        {
-          "name": "product_id",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "idx",
-          "ordinal": 8,
-          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -442,25 +466,13 @@
         false,
         false,
         false,
-        false,
-        true,
-        true
+        false
       ],
       "parameters": {
         "Right": 0
       }
     },
     "query": "SELECT * FROM `pictures`"
-  },
-  "458892f58564126ac3be15d84d57f566a3a4d6970b2cb40f8d141c1f99ccb0c8": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "insert or ignore into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
   },
   "486e473ee23408096b2758b187df56ba9492693fc91b1a9f12cedcbad4a70a97": {
     "describe": {
@@ -472,17 +484,7 @@
     },
     "query": "delete from entity_order where `type` = $1"
   },
-  "5a5e2fbba16158aa14965f9efaf2cb038a27cad9f965684a49de715bd69d9276": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 9
-      }
-    },
-    "query": "insert into `products` ( id, cover_id, title_en, title_ru, description_en, description_ru, price,\nshow_in_gallery, show_in_shop ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
-  },
-  "5d4a7e87ce8e28b9185685e2a34ec7a70e60d3f43a8a9f27e8dee3b6cefe45a5": {
+  "4f996d43e01e2d54d0e98c2374803a7343ed6391aebe8c9eeb5caa40a089dd08": {
     "describe": {
       "columns": [],
       "nullable": [],
@@ -490,7 +492,105 @@
         "Right": 4
       }
     },
-    "query": "insert or ignore into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
+    "query": "insert or ignore into `blog` ( `id`, `src`, `url`, `color` ) values ( $1, $2, $3, $4 )"
+  },
+  "53313c4aedea80d32f3c02a93fa4db20ca9fed1f78281a5e4451c562c67c9502": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 9
+      }
+    },
+    "query": "insert or ignore into `products` ( `id`, `cover_id`, `title_en`, `title_ru`, `description_en`, `description_ru`, `price`, `show_in_gallery`, `show_in_shop`, `created_at`, `updated_at` ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9, datetime('now'), datetime('now') )"
+  },
+  "63da704b46134d5385513e74e77091d320e8955629a0b7a11897e4eb80b29aa6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "cover_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_en",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "title_ru",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "show_in_gallery",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "show_in_shop",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "description_en",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "description_ru",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "price",
+          "ordinal": 8,
+          "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 9,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 10,
+          "type_info": "Datetime"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select * from `products` order by `created_at` desc"
+  },
+  "652f302bd5e7e4c51dd6b35ca3377273488e15d195b986abf7f7da615a7a1b5c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 11
+      }
+    },
+    "query": "insert into `products` ( `id`, `cover_id`, `title_en`, `title_ru`, `description_en`, `description_ru`, `price`, `show_in_gallery`, `show_in_shop`, `created_at`, `updated_at` ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11 )"
   },
   "74582fea44432fc6efc46a0afbb433361562774ca7c0d6c8493ee70338bf649a": {
     "describe": {
@@ -521,6 +621,16 @@
       }
     },
     "query": "delete from `blog`"
+  },
+  "8780ad08f292c04739b27d4306b8a3edac0893e19ca88ab69000bdbe21a44985": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "insert into `build` ( `id`, `status`, `date`, `log` ) values ( $1, $2, $3, $4 )"
   },
   "8db1f14a9e89f71b361d7f7844e6ba497c55b85c7b47b8ae82711a49929d4c51": {
     "describe": {
@@ -558,7 +668,7 @@
     },
     "query": "SELECT * FROM `blog`"
   },
-  "8f79c304b7203879ca9358376fca66600ce5ff7bb4b24289b56e88c42e708fd5": {
+  "926962499d9735485415dae3c524c687b8a7851889050cfd6226ed5c0216bc1f": {
     "describe": {
       "columns": [],
       "nullable": [],
@@ -566,47 +676,7 @@
         "Right": 9
       }
     },
-    "query": "insert or ignore into `products` ( id, cover_id, title_en, title_ru, description_en, description_ru, price,\nshow_in_gallery, show_in_shop ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
-  },
-  "8f933da9137a3abe78e12473f9d7214ae29f94e14cea93fa02720cafe6f3b594": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "update `blog` set src = $2, url = $3, color = $4 where id = $1"
-  },
-  "926533c91bfdb3af14d46f234ea56b5d8c83b8b991241d8104f684243576f67f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 9
-      }
-    },
-    "query": "replace into `products` ( id, cover_id, title_en, title_ru, description_en, description_ru, price,\nshow_in_gallery, show_in_shop ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
-  },
-  "944d11f0f6213624e32edd11a90820008856d8750dc589e235f9154b3803e18f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "insert into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
-  },
-  "972094e124ad0ad067bd9cd0ad4fe34d94f939c732b9d24827f07013eeedc4ea": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "insert into `blog` ( id, src, url, color ) values ( $1, $2, $3, $4 )"
+    "query": "insert into `products` ( `id`, `cover_id`, `title_en`, `title_ru`, `description_en`, `description_ru`, `price`, `show_in_gallery`, `show_in_shop`, `created_at`, `updated_at` ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9, datetime('now'), datetime('now') )"
   },
   "97b5602052fb2ee11998c0be2454d9688fa81de8ea3c58470f24b8a8673068bd": {
     "describe": {
@@ -618,15 +688,25 @@
     },
     "query": "delete from `products`"
   },
-  "a8034084a8920e624c52c0c10426a0864700e51af3926eddff998e9f08608712": {
+  "9a07c3b99a8127b66691207e1e056ac8f7134f09397dedf0a9c4c0864b82541e": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 3
+        "Right": 4
       }
     },
-    "query": "update pictures set product_id = $1, `idx` = $2 where id = $3"
+    "query": "update `blog` set `src` = $2, `url` = $3, `color` = $4 where id = $1"
+  },
+  "9bd51c66f2a54d255632d6c9b21d350c3b0de334ad70e7830ece2fca1770a324": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "insert or ignore into `build` ( `id`, `status`, `date`, `log` ) values ( $1, $2, $3, $4 )"
   },
   "a825e5698cffabdb64f9ca82a021bceeada20300b8e0b6e4987b4948823988bc": {
     "describe": {
@@ -648,7 +728,7 @@
     },
     "query": "update `build` set `log` = `log` || $1 || x'0a' where `id` = $2"
   },
-  "b1991c4ee5cdddb1492032c2d07b721729b1958073c2ca17adbb108ec8197fea": {
+  "b041c082539c35bdd811c172eddc5da726a5cafec95cd895214e098df2502952": {
     "describe": {
       "columns": [],
       "nullable": [],
@@ -656,27 +736,17 @@
         "Right": 4
       }
     },
-    "query": "replace into `build` ( id, status, date, log ) values ( $1, $2, $3, $4 )"
+    "query": "insert into `blog` ( `id`, `src`, `url`, `color` ) values ( $1, $2, $3, $4 )"
   },
-  "b86ae9c80dc41a5eaf2e8d7882a357acf17f160da2cd67dfbb0014eadff0ce1e": {
+  "b2f70dc478fb60f8f8a5987d922d78654f36ada804a58b0d1c229dbb619aca6f": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 9
+        "Right": 7
       }
     },
-    "query": "insert into `pictures` ( id, color, original_size_width, original_size_height, crop_anchor_x,\ncrop_anchor_y, crop_factor, product_id, idx ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
-  },
-  "c5c074f2bfbe093efd54560559993903a0d4c50a824dc211e7fde6a22951d088": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 9
-      }
-    },
-    "query": "replace into `pictures` ( id, color, original_size_width, original_size_height, crop_anchor_x,\ncrop_anchor_y, crop_factor, product_id, idx ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+    "query": "insert or ignore into `pictures` ( `id`, `color`, `original_size_width`, `original_size_height`, `crop_anchor_x`, `crop_anchor_y`, `crop_factor` ) values ( $1, $2, $3, $4, $5, $6, $7 )"
   },
   "ced1923725f3a7891ff84a3f91c3b4da3ab1e97f2eecaa8763ac17a0b6987c72": {
     "describe": {
@@ -725,6 +795,16 @@
           "name": "price",
           "ordinal": 8,
           "type_info": "Int64"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 9,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 10,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
@@ -736,7 +816,9 @@
         false,
         false,
         false,
-        true
+        true,
+        false,
+        false
       ],
       "parameters": {
         "Right": 0
@@ -779,6 +861,16 @@
       }
     },
     "query": "SELECT * FROM blog"
+  },
+  "d6840f8b0dbf3333244d0ed4e8278de87f274e37f0d82e9c3aa2a51e645a95bd": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "insert into `product_pictures` (`product_id`, `picture_id`, `idx`) values ($1, $2, $3)"
   },
   "d8b657d1ae7af693dcd0e7a30a8f1415740ea2393cfd994c69a052be0fb68bd3": {
     "describe": {
@@ -853,16 +945,6 @@
           "name": "crop_factor",
           "ordinal": 6,
           "type_info": "Float"
-        },
-        {
-          "name": "product_id",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "idx",
-          "ordinal": 8,
-          "type_info": "Int64"
         }
       ],
       "nullable": [
@@ -872,9 +954,7 @@
         false,
         false,
         false,
-        false,
-        true,
-        true
+        false
       ],
       "parameters": {
         "Right": 1
@@ -917,15 +997,5 @@
       }
     },
     "query": "SELECT * FROM `build`"
-  },
-  "f481fa6333ea793b2dec64ff946f253213029bc2feee04ee76366ea07d2fa2f3": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 9
-      }
-    },
-    "query": "insert or ignore into `pictures` ( id, color, original_size_width, original_size_height, crop_anchor_x,\ncrop_anchor_y, crop_factor, product_id, idx ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
   }
 }

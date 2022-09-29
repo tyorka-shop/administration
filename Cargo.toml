@@ -27,11 +27,12 @@ rayon = "1.5.3"
 serde = { version = "1.0.144", features = ["serde_derive"] }
 serde_json = "1.0.85"
 session_service_grpc = { git = "https://github.com/tyorka-shop/session-service-grpc.git" }
-sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "sqlite", "offline" ] }
+sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "sqlite", "offline", "chrono" ] }
 tokio = "1.20.1"
 lazy_static = "1.4.0"
 subprocess = "0.2.9"
 strip-ansi-escapes = "0.1.1"
+insta_sync = {path = "./insta_sync"}
 
 [dev-dependencies]
 assert-json-diff = "2.0.2"

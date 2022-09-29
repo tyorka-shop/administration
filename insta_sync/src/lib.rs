@@ -1,22 +1,15 @@
+use std::io::Result;
+
+use sqlx::SqlitePool;
+
 mod insta;
 mod download;
 mod types;
 
-#[tokio::main]
-async fn main() {
-  env_logger::init();
-  let cfg = config::load("tyorka-admin");
-
+pub async fn sync(cfg: &config::Config, db: &SqlitePool) -> Result<()> {
   match cfg.insta {
-    None => {return ();},
-    Some(insta) => {
-      
-      let db = sqlx::sqlite::SqlitePoolOptions::new()
-        .max_connections(5)
-        .connect(&cfg.database_uri)
-        .await
-        .unwrap();
-      
+    None => {return Ok(());},
+    Some(ref insta) => {
       
       let posts = insta::get_posts(
           &insta.access_token,
@@ -32,6 +25,8 @@ async fn main() {
       for post in posts {
           post.insert_or_ignore(&db).await.unwrap();
       }
+
+      Ok(())
     }
   }
 }
