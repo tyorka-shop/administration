@@ -212,60 +212,6 @@
     },
     "query": "SELECT * FROM `build` WHERE id = $1"
   },
-  "1a9f4fd7102392927c7c8a0ba8903597f3e8707c25db3cbb3540db65e9f725e9": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "color",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "original_size_width",
-          "ordinal": 2,
-          "type_info": "Int64"
-        },
-        {
-          "name": "original_size_height",
-          "ordinal": 3,
-          "type_info": "Int64"
-        },
-        {
-          "name": "crop_anchor_x",
-          "ordinal": 4,
-          "type_info": "Float"
-        },
-        {
-          "name": "crop_anchor_y",
-          "ordinal": 5,
-          "type_info": "Float"
-        },
-        {
-          "name": "crop_factor",
-          "ordinal": 6,
-          "type_info": "Float"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "select p.* from pictures p join product_pictures pp on pp.picture_id = p.id where pp.product_id = ? order by pp.`idx`"
-  },
   "200626ee7f16fb76b430a8eac7f77b0f94785afe0262328657f58749f16eef69": {
     "describe": {
       "columns": [],
@@ -503,6 +449,60 @@
       }
     },
     "query": "insert or ignore into `products` ( `id`, `cover_id`, `title_en`, `title_ru`, `description_en`, `description_ru`, `price`, `show_in_gallery`, `show_in_shop`, `created_at`, `updated_at` ) values ( $1, $2, $3, $4, $5, $6, $7, $8, $9, datetime('now'), datetime('now') )"
+  },
+  "59e63d4bb553123359dab6c6ea1604a25ae55742de08e1218bab205e6b77eea2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "color",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_size_width",
+          "ordinal": 2,
+          "type_info": "Int64"
+        },
+        {
+          "name": "original_size_height",
+          "ordinal": 3,
+          "type_info": "Int64"
+        },
+        {
+          "name": "crop_anchor_x",
+          "ordinal": 4,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_anchor_y",
+          "ordinal": 5,
+          "type_info": "Float"
+        },
+        {
+          "name": "crop_factor",
+          "ordinal": 6,
+          "type_info": "Float"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            select p.*\n            from pictures p \n            join product_pictures pp on pp.picture_id = p.id\n            left join products pr on pr.cover_id = pp.picture_id\n            where pp.product_id = ?\n            order by (case when pr.id is null then pp.`idx` else -1 end)\n            "
   },
   "63da704b46134d5385513e74e77091d320e8955629a0b7a11897e4eb80b29aa6": {
     "describe": {
