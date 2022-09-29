@@ -416,6 +416,23 @@ mod picture_order {
 
         insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
+
+    #[tokio::test]
+    async fn cover_is_first() {
+        let db = setup([1, 2]).await.unwrap();
+
+        let mut product = entity::Product::new_fixture();
+        product.cover_id = "2".to_string();
+        product.insert_or_update(&db).await.unwrap();
+
+
+        let query = r#"query Products { products { pictures { id } } }"#;
+
+        let result = request(query, &db).await;
+
+        insta::assert_json_snapshot!(result.data.into_json().unwrap());
+    }
+
 }
 
 #[cfg(test)]

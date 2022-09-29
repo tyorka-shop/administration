@@ -66,7 +66,14 @@ impl Picture {
     pub async fn get_by_product_id(db: &sqlx::SqlitePool, id: &ID) -> sqlx::Result<Vec<Self>> {
         let rows = sqlx::query_as!(
             entity::Picture,
-            "select p.* from pictures p join product_pictures pp on pp.picture_id = p.id where pp.product_id = ? order by pp.`idx`",
+            r#"
+            select p.*
+            from pictures p 
+            join product_pictures pp on pp.picture_id = p.id
+            left join products pr on pr.cover_id = pp.picture_id
+            where pp.product_id = ?
+            order by (case when pr.id is null then pp.`idx` else -1 end)
+            "#,
             id.0
         )
         .fetch_all(db)
