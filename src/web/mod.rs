@@ -17,7 +17,7 @@ pub async fn make_server(
     let addr = SocketAddr::from_str(&cfg.addr).unwrap();
 
     let extractor = RoleExctractor::new(&cfg.secret, "http://localhost:50051".into());
-    let builder = crate::builder::Builder::new("/home/kazatca/tyorka.com");
+    let builder = crate::builder::Builder::new(&cfg.public_site_folder);
 
     let app = Route::new()
         .nest("/static/images", StaticFilesEndpoint::new(&cfg.images_folder))

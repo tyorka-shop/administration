@@ -12,6 +12,7 @@ pub struct Config {
     pub database_uri: String,
     pub cors_allowed_origins: Vec<String>,
     pub images_folder: String,
+    pub public_site_folder: String,
     pub insta: Option<InstaConfig>
 }
 
@@ -23,6 +24,7 @@ impl Default for Config {
             cors_allowed_origins: vec!["http://localhost:3000".into()],
             database_uri: "sqlite:./store/db.sqlite".into(),
             images_folder: "./store/images".into(),
+            public_site_folder: "/public".into(),
             insta: None
         }
     }
