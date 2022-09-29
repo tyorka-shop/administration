@@ -1,16 +1,16 @@
-mod cached_session_service;
-mod graphql_types;
-mod graphql_schema;
-mod guard;
-mod web;
-mod image_storage;
 mod builder;
+mod cached_session_service;
+mod graphql_schema;
+mod graphql_types;
+mod guard;
+mod image_storage;
+mod web;
 
 #[cfg(test)]
 mod test_utils;
 
-use sqlx::sqlite::SqlitePoolOptions;
 use image_storage::ImageStorage;
+use sqlx::sqlite::SqlitePoolOptions;
 
 pub const PIC_SIZES: &[u32] = &[200, 600, 2000];
 
@@ -24,6 +24,8 @@ async fn main() {
         .connect(&cfg.database_uri)
         .await
         .unwrap();
+        
+    sqlx::migrate!().run(&db).await.unwrap();
 
     let images = ImageStorage::new(&cfg.images_folder, PIC_SIZES.into()).unwrap();
 
