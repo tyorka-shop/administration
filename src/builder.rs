@@ -22,16 +22,12 @@ lazy_static! {
 
 #[derive(Clone)]
 pub struct Builder {
-    public_site_folder: String,
+    pub public_site_folder: String,
+    pub images_folder: String,
+    pub insta_cfg: Option<config::InstaConfig>,
 }
 
 impl Builder {
-    pub fn new(dir: &str) -> Self {
-        Self {
-            public_site_folder: dir.to_string(),
-        }
-    }
-
     pub fn current_build(&self) -> Option<String> {
         let build = BUILD.lock().unwrap();
         match *build {
@@ -44,33 +40,41 @@ impl Builder {
         log::debug!("Starting build");
         let build = lock().unwrap();
 
-        let mut environment = std::env::vars()
-            .map(|(k, v)| {(OsString::from(k), OsString::from(v))})
-            .collect::<Vec<_>>();
-        environment.push((OsString::from("XDG_CONFIG_HOME"), OsString::from(self.public_site_folder.clone())));
-        
-        let mut cmd = Popen::create(
-            &["make"],
-            PopenConfig {
-                stdout: Redirection::Pipe,
-                stderr: Redirection::Merge,
-                cwd: Some(OsString::from(self.public_site_folder.clone())),
-                env: Some(environment),
-                ..Default::default()
-            },
-        )
-        .unwrap();
-
-        let reader = BufReader::new(cmd.stdout.take().unwrap());
-        let db = db.clone();
         let result = build.clone();
+        let db = db.clone();
+        let builder = self.clone();
         thread::spawn(move || {
             let rt = tokio::runtime::Runtime::new().unwrap();
             rt.block_on(async {
                 build.insert(&db).await.unwrap();
             });
+
+            builder.insta_sync(&build.id, &db);
+
+            let mut environment = std::env::vars()
+                .map(|(k, v)| (OsString::from(k), OsString::from(v)))
+                .collect::<Vec<_>>();
+            environment.push((
+                OsString::from("XDG_CONFIG_HOME"),
+                OsString::from(&builder.public_site_folder),
+            ));
+
+            let mut cmd = Popen::create(
+                &["make"],
+                PopenConfig {
+                    stdout: Redirection::Pipe,
+                    stderr: Redirection::Merge,
+                    cwd: Some(OsString::from(&builder.public_site_folder)),
+                    env: Some(environment),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let reader = BufReader::new(cmd.stdout.take().unwrap());
             for line in reader.lines() {
-                store_output(&db, &build.id, &line.unwrap());
+                rt.block_on(async {
+                    store_output(&db, &build.id, &line.unwrap()).await;
+                })
             }
 
             let is_ok = match cmd.wait().unwrap() {
@@ -78,11 +82,43 @@ impl Builder {
                 _ => false,
             };
             unlock();
-            store_status(&db, &build.id, is_ok);
+            rt.block_on(async {
+                store_status(&db, &build.id, is_ok).await;
+            });
             log::debug!("Build finished");
         });
 
         Ok(result)
+    }
+
+    fn insta_sync(&self, build_id: &str, db: &SqlitePool) {
+        match self.insta_cfg {
+            Some(ref cfg) => {
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(async {
+                    store_output(&db, &build_id, &format!("Sync insagram")).await;
+
+                    match insta_sync::sync(&cfg, &self.images_folder, &db).await {
+                        Err(e) => {
+                            log::error!("Error while syncing instagram: {}", e);
+                            store_output(
+                                &db,
+                                &build_id,
+                                &format!("Error while syncing instagram: {}", e),
+                            )
+                            .await;
+                        }
+                        _ => {
+                            store_output(&db, &build_id, &format!("  finished")).await;
+                        }
+                    };
+                });
+            }
+
+            None => {
+                log::debug!("No instagram config");
+            }
+        }
     }
 }
 
@@ -112,31 +148,25 @@ fn unlock() {
     *current_build = CurrentBuild::Idle;
 }
 
-fn store_output(db: &SqlitePool, id: &str, buf: &str) {
-    let rt = tokio::runtime::Runtime::new().expect("Can't create runtime for store_output");
-    rt.block_on(async {
-        sqlx::query!(
-            r#"update `build` set `log` = `log` || $1 || x'0a' where `id` = $2"#,
-            buf,
-            id
-        )
-        .execute(db)
-        .await
-        .unwrap();
-    });
+async fn store_output(db: &SqlitePool, id: &str, buf: &str) {
+    sqlx::query!(
+        r#"update `build` set `log` = `log` || $1 || x'0a' where `id` = $2"#,
+        buf,
+        id
+    )
+    .execute(db)
+    .await
+    .unwrap();
 }
 
-fn store_status(db: &SqlitePool, id: &str, is_ok: bool) {
-    let rt = tokio::runtime::Runtime::new().expect("Can't create runtime for store_status");
-    rt.block_on(async {
-        let status = if is_ok { "DONE" } else { "FAILED" };
-        sqlx::query!(
-            r#"update `build` set `status` = $2 where `id` = $1"#,
-            id,
-            status
-        )
-        .execute(db)
-        .await
-        .unwrap();
-    });
+async fn store_status(db: &SqlitePool, id: &str, is_ok: bool) {
+    let status = if is_ok { "DONE" } else { "FAILED" };
+    sqlx::query!(
+        r#"update `build` set `status` = $2 where `id` = $1"#,
+        id,
+        status
+    )
+    .execute(db)
+    .await
+    .unwrap();
 }

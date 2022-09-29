@@ -1,4 +1,4 @@
-use insta::InstaConfig;
+pub use insta::InstaConfig;
 use random::make_secret_key;
 use serde::{Deserialize, Serialize};
 

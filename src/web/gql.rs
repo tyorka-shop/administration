@@ -10,6 +10,7 @@ pub async fn handler(
     Data(images): Data<&ImageStorage>,
     Data(role_extractor): Data<&RoleExctractor>,
     Data(builder): Data<&Builder>,
+    Data(cfg): Data<&config::Config>,
     headers: &HeaderMap,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
@@ -19,7 +20,12 @@ pub async fn handler(
 
     log::debug!("req: {:?}", req);
 
-    let req = req.data(role).data(db.clone()).data(images.clone()).data(builder.clone());
+    let req = req
+        .data(role)
+        .data(cfg.clone())
+        .data(db.clone())
+        .data(images.clone())
+        .data(builder.clone());
     let resp: GraphQLResponse = schema.execute(req).await.into();
     log::debug!("resp: {:?}", resp.0);
     resp

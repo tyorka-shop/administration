@@ -125,16 +125,8 @@ impl Mutations {
 
     #[graphql(guard = "RoleData::admin()")]
     async fn publish(&self, ctx: &Context<'_>) -> Result<Build> {
-        let cfg = ctx.data::<config::Config>().unwrap();
         let db = ctx.data::<SqlitePool>().unwrap();
         let builder = ctx.data::<Builder>().unwrap();
-
-        match insta_sync::sync(&cfg, &db).await {
-            Err(e) => {
-                log::error!("Error while syncing instagram: {}", e);
-            },
-            _ => {},
-        };
 
         let build = builder.build(&db).unwrap();
         
