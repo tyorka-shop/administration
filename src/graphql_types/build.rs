@@ -18,7 +18,7 @@ impl From<entity::Build> for Build {
     Self {
       id: build.id.into(),
       status: build.status.parse().unwrap(),
-      date: build.date,
+      date: build.created_at.to_string(),
       log: build.log
     }
   }

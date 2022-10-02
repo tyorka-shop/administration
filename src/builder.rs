@@ -72,9 +72,19 @@ impl Builder {
             .unwrap();
             let reader = BufReader::new(cmd.stdout.take().unwrap());
             for line in reader.lines() {
-                rt.block_on(async {
-                    store_output(&db, &build.id, &line.unwrap()).await;
-                })
+                match line {
+                    Ok(line) => {
+                        if line.len() > 0 {
+                            rt.block_on(async {
+                                store_output(&db, &build.id, &line).await;
+                            });
+                        }
+                    },
+
+                    Err(e) => {
+                        log::error!("Error reading line: {}", e);
+                    }
+                }
             }
 
             let is_ok = match cmd.wait().unwrap() {
@@ -150,7 +160,7 @@ fn unlock() {
 
 async fn store_output(db: &SqlitePool, id: &str, buf: &str) {
     sqlx::query!(
-        r#"update `build` set `log` = `log` || $1 || x'0a' where `id` = $2"#,
+        r#"update `build` set `log` = `log` || $1 || x'0a', updated_at = datetime('now') where `id` = $2"#,
         buf,
         id
     )
@@ -162,7 +172,7 @@ async fn store_output(db: &SqlitePool, id: &str, buf: &str) {
 async fn store_status(db: &SqlitePool, id: &str, is_ok: bool) {
     let status = if is_ok { "DONE" } else { "FAILED" };
     sqlx::query!(
-        r#"update `build` set `status` = $2 where `id` = $1"#,
+        r#"update `build` set `status` = $2, updated_at = datetime('now') where `id` = $1"#,
         id,
         status
     )

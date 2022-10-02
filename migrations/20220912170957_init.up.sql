@@ -46,7 +46,8 @@ CREATE TABLE `build` (
   `id` VARCHAR(255) PRIMARY KEY NOT NULL,
   `status` VARCHAR(255) NOT NULL,
   `log` TEXT NOT NULL,
-  `date` VARCHAR(255) NOT NULL
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE `product_pictures` (

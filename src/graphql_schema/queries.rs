@@ -116,7 +116,7 @@ impl Queries {
     async fn publications(&self, ctx: &Context<'_>) -> Result<Vec<Build>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
-        let builds = sqlx::query_as!(entity::Build, "SELECT * FROM `build` order by `date` desc")
+        let builds = sqlx::query_as!(entity::Build, "SELECT * FROM `build` order by `created_at` desc")
             .fetch_all(db)
             .await
             .unwrap()
@@ -144,9 +144,19 @@ impl Queries {
     }
     
     #[graphql(guard = "RoleData::admin()")]
-    async fn publication_duration(&self, _ctx: &Context<'_>) -> Result<i32> {
-        // let db = ctx.data::<SqlitePool>().unwrap();
-        Ok(60_000)
+    async fn publication_duration(&self, ctx: &Context<'_>) -> Result<i32> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+        match sqlx::query!("select `created_at`, `updated_at` from `build` where `status` = 'DONE'").fetch_all(db).await {
+            Ok(rows) => {
+                let len = rows.len() as i64;
+                if len == 0 {
+                    return Ok(60_000);
+                }
+                let sum: i64 = rows.into_iter().map(|row| row.updated_at.timestamp_millis() - row.created_at.timestamp_millis()).sum();
+                Ok((sum /  len as i64) as i32)
+            },
+            Err(_) => Ok(60_000),
+        }
     }
 }
 
