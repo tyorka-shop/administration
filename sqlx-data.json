@@ -166,6 +166,16 @@
     },
     "query": "insert into `entity_order` (`entity_id`, `type`, `idx`) values ($1, $2, $3)"
   },
+  "16da64df2a7f871a08b8afccaf05af610d78439307527ec98a9545f38521aa82": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "insert or ignore into `build` ( `id`, `status`, `log`, `created_at`, `updated_at` ) values ( $1, $2, $3, datetime('now'), datetime('now') )"
+  },
   "18b97951608df5be3d8c971864cadfd93d7aacf1f537d847ab1287e696971207": {
     "describe": {
       "columns": [],
@@ -195,12 +205,18 @@
           "type_info": "Text"
         },
         {
-          "name": "date",
+          "name": "created_at",
           "ordinal": 3,
-          "type_info": "Text"
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -310,15 +326,15 @@
     },
     "query": "SELECT * FROM `products` WHERE id = $1"
   },
-  "2bbd63528fa5ac66f7edc2645ba19bc3d740b2ed5aba998faf4677dcd3c3b96a": {
+  "2ac5f4939cfc6498e9b365b36029a1ab1732c65719c95e015f984ae1df6f5a68": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 4
+        "Right": 5
       }
     },
-    "query": "update `build` set `status` = $2, `date` = $3, `log` = $4 where id = $1"
+    "query": "insert into `build` ( `id`, `status`, `log`, `created_at`, `updated_at` ) values ( $1, $2, $3, $4, $5 )"
   },
   "2bfb07be872264a2f1e088aa1ba9807b5bb3e1bf9e4842be5930b46bc876af54": {
     "describe": {
@@ -330,7 +346,7 @@
     },
     "query": "update `pictures` set `color` = $2, `original_size_width` = $3, `original_size_height` = $4, `crop_anchor_x` = $5, `crop_anchor_y` = $6, `crop_factor` = $7 where id = $1"
   },
-  "335bfc76321a5675baaded72e541cfc249d3840232e2c9eb45a5397050fa0b12": {
+  "34ff7a97ef7d715e05e03db68bd57d198a02e834fa3498cd74a507dc4f198056": {
     "describe": {
       "columns": [
         {
@@ -349,12 +365,18 @@
           "type_info": "Text"
         },
         {
-          "name": "date",
+          "name": "created_at",
           "ordinal": 3,
-          "type_info": "Text"
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
@@ -364,7 +386,7 @@
         "Right": 0
       }
     },
-    "query": "SELECT * FROM `build` order by `date` desc"
+    "query": "SELECT * FROM `build` order by `created_at` desc"
   },
   "3d099a6d0d32446b8765be57892681ddaaa425961eddb50545dd0de873480852": {
     "describe": {
@@ -429,6 +451,16 @@
       }
     },
     "query": "delete from entity_order where `type` = $1"
+  },
+  "4a592f27076d828a62d0f66bda83959ba2ff7debf85f1b20748e968f1c6ffd87": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "insert into `build` ( `id`, `status`, `log`, `created_at`, `updated_at` ) values ( $1, $2, $3, datetime('now'), datetime('now') )"
   },
   "4f996d43e01e2d54d0e98c2374803a7343ed6391aebe8c9eeb5caa40a089dd08": {
     "describe": {
@@ -503,6 +535,16 @@
       }
     },
     "query": "\n            select p.*\n            from pictures p \n            join product_pictures pp on pp.picture_id = p.id\n            left join products pr on pr.cover_id = pp.picture_id\n            where pp.product_id = ?\n            order by (case when pr.id is null then pp.`idx` else -1 end)\n            "
+  },
+  "5b0321e5faef35c944560f4aa6c38a688331b579acd728b5eb24d39f45f58afb": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "update `build` set `status` = $2, updated_at = datetime('now') where `id` = $1"
   },
   "63da704b46134d5385513e74e77091d320e8955629a0b7a11897e4eb80b29aa6": {
     "describe": {
@@ -602,16 +644,6 @@
     },
     "query": "delete from `pictures`"
   },
-  "82a2fc5bd6aadd8b84d7ebae997ddda63943ffc53e85ef4b5bf4edd9ee94dd82": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "update `build` set `status` = $2 where `id` = $1"
-  },
   "863b25a6994c1dd60a416049521c2adfe0ecf76d5bf87f25d07e287d9e2764ef": {
     "describe": {
       "columns": [],
@@ -621,16 +653,6 @@
       }
     },
     "query": "delete from `blog`"
-  },
-  "8780ad08f292c04739b27d4306b8a3edac0893e19ca88ab69000bdbe21a44985": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "insert into `build` ( `id`, `status`, `date`, `log` ) values ( $1, $2, $3, $4 )"
   },
   "8db1f14a9e89f71b361d7f7844e6ba497c55b85c7b47b8ae82711a49929d4c51": {
     "describe": {
@@ -698,15 +720,15 @@
     },
     "query": "update `blog` set `src` = $2, `url` = $3, `color` = $4 where id = $1"
   },
-  "9bd51c66f2a54d255632d6c9b21d350c3b0de334ad70e7830ece2fca1770a324": {
+  "a5279f9c6661271becd0def4d5baa76fe462c370f5448503c9235dc20e920ba9": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 4
+        "Right": 2
       }
     },
-    "query": "insert or ignore into `build` ( `id`, `status`, `date`, `log` ) values ( $1, $2, $3, $4 )"
+    "query": "update `build` set `log` = `log` || $1 || x'0a', updated_at = datetime('now') where `id` = $2"
   },
   "a825e5698cffabdb64f9ca82a021bceeada20300b8e0b6e4987b4948823988bc": {
     "describe": {
@@ -718,16 +740,6 @@
     },
     "query": "delete from `build`"
   },
-  "ab02d5ac9321fb898a1f3a35c0ca966a6b86884e78cff413c39e61ccbc413a9e": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "update `build` set `log` = `log` || $1 || x'0a' where `id` = $2"
-  },
   "b041c082539c35bdd811c172eddc5da726a5cafec95cd895214e098df2502952": {
     "describe": {
       "columns": [],
@@ -738,6 +750,30 @@
     },
     "query": "insert into `blog` ( `id`, `src`, `url`, `color` ) values ( $1, $2, $3, $4 )"
   },
+  "b0f4f41278480080c68aaf8bd65877f349bc181f3d6d84d5d7bddebd3c61ad23": {
+    "describe": {
+      "columns": [
+        {
+          "name": "created_at",
+          "ordinal": 0,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 1,
+          "type_info": "Datetime"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "select `created_at`, `updated_at` from `build` where `status` = 'DONE'"
+  },
   "b2f70dc478fb60f8f8a5987d922d78654f36ada804a58b0d1c229dbb619aca6f": {
     "describe": {
       "columns": [],
@@ -747,6 +783,16 @@
       }
     },
     "query": "insert or ignore into `pictures` ( `id`, `color`, `original_size_width`, `original_size_height`, `crop_anchor_x`, `crop_anchor_y`, `crop_factor` ) values ( $1, $2, $3, $4, $5, $6, $7 )"
+  },
+  "bb587885d337f7324e525660e077ed78f99986877393ee998335c94af71a16f2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "update `build` set `status` = $2, `log` = $3, `updated_at` = datetime('now') where id = $1"
   },
   "ced1923725f3a7891ff84a3f91c3b4da3ab1e97f2eecaa8763ac17a0b6987c72": {
     "describe": {
@@ -981,12 +1027,18 @@
           "type_info": "Text"
         },
         {
-          "name": "date",
+          "name": "created_at",
           "ordinal": 3,
-          "type_info": "Text"
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
         }
       ],
       "nullable": [
+        false,
         false,
         false,
         false,
