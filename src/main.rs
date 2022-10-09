@@ -5,6 +5,7 @@ mod graphql_types;
 mod guard;
 mod image_storage;
 mod web;
+mod publication_status;
 
 #[cfg(test)]
 mod test_utils;

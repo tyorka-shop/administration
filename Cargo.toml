@@ -36,6 +36,7 @@ insta_sync = {path = "./insta_sync"}
 async-stream = "0.3.3"
 futures-timer = "3.0.2"
 pubsub = "0.2.3"
+crossbeam-channel = "0.5.6"
 
 [dev-dependencies]
 assert-json-diff = "2.0.2"

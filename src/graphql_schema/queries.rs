@@ -1,7 +1,7 @@
 use crate::{
     builder::Builder,
     graphql_types::{BlogPost, Build, Picture, Product, User},
-    guard::{Role, RoleData},
+    guard::{Role, RoleData}, publication_status::{PublicationStatus, PublicationStatusTrait},
 };
 use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
@@ -146,27 +146,7 @@ impl Queries {
     #[graphql(guard = "RoleData::admin()")]
     async fn is_draft(&self, ctx: &Context<'_>) -> Result<bool> {
         let db = ctx.data::<SqlitePool>().unwrap();
-
-        let row = sqlx::query!(
-            r#"
-        select count(updated_at) as cnt 
-        from (
-            select max(updated_at) as updated_at from products 
-            union all
-            select max(updated_at) as updated_at from entity_order
-            union all
-            select max(updated_at) as updated_at from product_pictures
-        )
-        where updated_at > (select max(created_at) from build where status = 'DONE')
-        "#
-        )
-        .fetch_one(db)
-        .await?;
-
-        match row.cnt {
-            Some(0) | None => Ok(false),
-            _ => Ok(true),
-        }
+        Ok(PublicationStatus::is_draft(&db).await.unwrap())
     }
 
     #[graphql(guard = "RoleData::admin()")]

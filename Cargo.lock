@@ -2916,6 +2916,7 @@ dependencies = [
  "chrono",
  "config",
  "constant_time_eq",
+ "crossbeam-channel",
  "dominant_color",
  "entity",
  "env_logger 0.9.0",

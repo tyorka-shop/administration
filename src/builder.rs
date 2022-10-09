@@ -36,7 +36,7 @@ impl Builder {
         }
     }
 
-    pub fn build(&self, db: &SqlitePool) -> Result<entity::Build, Error> {
+    pub fn build<F>(&self, db: &SqlitePool, on_success: F) -> Result<entity::Build, Error> where F: FnOnce() + Send + 'static {
         log::debug!("Starting build");
         let build = lock().unwrap();
 
@@ -95,6 +95,9 @@ impl Builder {
             rt.block_on(async {
                 store_status(&db, &build.id, is_ok).await;
             });
+            if is_ok {
+                on_success();
+            }
             log::debug!("Build finished");
         });
 

@@ -1,11 +1,19 @@
 mod gql;
 mod upload;
 
-use poem::{listener::TcpListener, post, EndpointExt, Route, Server, middleware::Cors, endpoint::StaticFilesEndpoint};
+use poem::{
+    endpoint::StaticFilesEndpoint, listener::TcpListener, middleware::Cors, post, EndpointExt,
+    Route, Server,
+};
 use sqlx::SqlitePool;
 use std::{future::Future, net::SocketAddr, str::FromStr};
 
-use crate::{graphql_schema::build_schema, guard::RoleExctractor, image_storage::ImageStorage};
+use crate::{
+    graphql_schema::build_schema,
+    guard::RoleExctractor,
+    image_storage::ImageStorage,
+    publication_status::{PublicationStatusTrait, PublicationStatus},
+};
 
 pub async fn make_server(
     cfg: config::Config,
@@ -23,17 +31,27 @@ pub async fn make_server(
         insta_cfg: cfg.insta.clone(),
     };
 
+    let publication_status = PublicationStatus::new();
+
     let app = Route::new()
-        .nest("/static/images", StaticFilesEndpoint::new(&cfg.images_folder))
+        .nest(
+            "/static/images",
+            StaticFilesEndpoint::new(&cfg.images_folder),
+        )
         .at("/graphql", post(gql::handler))
         .at("/upload", post(upload::handler))
-        .with(Cors::new().allow_origins(cfg.cors_allowed_origins.clone()).allow_credentials(true))
+        .with(
+            Cors::new()
+                .allow_origins(cfg.cors_allowed_origins.clone())
+                .allow_credentials(true),
+        )
         .data(schema)
         .data(extractor)
         .data(db)
         .data(cfg)
         .data(images)
-        .data(builder);
+        .data(builder)
+        .data(publication_status);
 
     log::info!("GraphQL listening on {}", addr);
     Server::new(TcpListener::bind(addr)).run(app)
