@@ -33,6 +33,9 @@ lazy_static = "1.4.0"
 subprocess = "0.2.9"
 strip-ansi-escapes = "0.1.1"
 insta_sync = {path = "./insta_sync"}
+async-stream = "0.3.3"
+futures-timer = "3.0.2"
+pubsub = "0.2.3"
 
 [dev-dependencies]
 assert-json-diff = "2.0.2"

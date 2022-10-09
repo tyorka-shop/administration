@@ -29,12 +29,15 @@ impl Queries {
     async fn products(&self, ctx: &Context<'_>) -> Result<Vec<Product>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
-        let products = sqlx::query_as!(entity::Product, "select * from `products` order by `created_at` desc")
-            .fetch_all(db)
-            .await?
-            .into_iter()
-            .map(Product::from)
-            .collect();
+        let products = sqlx::query_as!(
+            entity::Product,
+            "select * from `products` order by `created_at` desc"
+        )
+        .fetch_all(db)
+        .await?
+        .into_iter()
+        .map(Product::from)
+        .collect();
 
         Ok(products)
     }
@@ -116,13 +119,16 @@ impl Queries {
     async fn publications(&self, ctx: &Context<'_>) -> Result<Vec<Build>> {
         let db = ctx.data::<SqlitePool>().unwrap();
 
-        let builds = sqlx::query_as!(entity::Build, "SELECT * FROM `build` order by `created_at` desc")
-            .fetch_all(db)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(Build::from)
-            .collect();
+        let builds = sqlx::query_as!(
+            entity::Build,
+            "SELECT * FROM `build` order by `created_at` desc"
+        )
+        .fetch_all(db)
+        .await
+        .unwrap()
+        .into_iter()
+        .map(Build::from)
+        .collect();
         Ok(builds)
     }
 
@@ -138,23 +144,51 @@ impl Queries {
     }
 
     #[graphql(guard = "RoleData::admin()")]
-    async fn is_draft(&self, _ctx: &Context<'_>) -> Result<bool> {
-        // let db = ctx.data::<SqlitePool>().unwrap();
-        Ok(true)
+    async fn is_draft(&self, ctx: &Context<'_>) -> Result<bool> {
+        let db = ctx.data::<SqlitePool>().unwrap();
+
+        let row = sqlx::query!(
+            r#"
+        select count(updated_at) as cnt 
+        from (
+            select max(updated_at) as updated_at from products 
+            union all
+            select max(updated_at) as updated_at from entity_order
+            union all
+            select max(updated_at) as updated_at from product_pictures
+        )
+        where updated_at > (select max(created_at) from build where status = 'DONE')
+        "#
+        )
+        .fetch_one(db)
+        .await?;
+
+        match row.cnt {
+            Some(0) | None => Ok(false),
+            _ => Ok(true),
+        }
     }
-    
+
     #[graphql(guard = "RoleData::admin()")]
     async fn publication_duration(&self, ctx: &Context<'_>) -> Result<i32> {
         let db = ctx.data::<SqlitePool>().unwrap();
-        match sqlx::query!("select `created_at`, `updated_at` from `build` where `status` = 'DONE'").fetch_all(db).await {
+        match sqlx::query!("select `created_at`, `updated_at` from `build` where `status` = 'DONE'")
+            .fetch_all(db)
+            .await
+        {
             Ok(rows) => {
                 let len = rows.len() as i64;
                 if len == 0 {
                     return Ok(60_000);
                 }
-                let sum: i64 = rows.into_iter().map(|row| row.updated_at.timestamp_millis() - row.created_at.timestamp_millis()).sum();
-                Ok((sum /  len as i64) as i32)
-            },
+                let sum: i64 = rows
+                    .into_iter()
+                    .map(|row| {
+                        row.updated_at.timestamp_millis() - row.created_at.timestamp_millis()
+                    })
+                    .sum();
+                Ok((sum / len as i64) as i32)
+            }
             Err(_) => Ok(60_000),
         }
     }
@@ -198,10 +232,7 @@ mod role {
 
         let response = schema.execute(request.data(Role::Client)).await;
 
-        assert_eq!(
-            response.errors.first().unwrap().message,
-            "Unauthorized"
-        );
+        assert_eq!(response.errors.first().unwrap().message, "Unauthorized");
     }
 }
 
@@ -253,7 +284,7 @@ mod products {
         product.id = "07d7b72c-5b2e-4a35-a257-158496993dcc".into();
         product.created_at = chrono::NaiveDateTime::from_timestamp(1_000_000_000, 0);
         product.insert_all(&db).await.unwrap();
-        
+
         product = entity::Product::new_fixture();
         product.id = "17d7b72c-5b2e-4a35-a257-158496993dcc".into();
         product.created_at = chrono::NaiveDateTime::from_timestamp(2_000_000_000, 0);
@@ -283,7 +314,10 @@ mod products {
             "INSERT INTO `product_pictures` (`product_id`, `picture_id`, `idx`) VALUES ($1, $2, 0)",
             product.id,
             picture.id
-        ).execute(&db).await.unwrap();
+        )
+        .execute(&db)
+        .await
+        .unwrap();
 
         let query = r#"query Products { products { pictures { id } } }"#;
 
@@ -399,7 +433,10 @@ mod picture_order {
                 product.id,
                 picture.id,
                 list[i - 1]
-            ).execute(&db).await.unwrap();
+            )
+            .execute(&db)
+            .await
+            .unwrap();
         }
 
         Ok(db)
@@ -435,14 +472,12 @@ mod picture_order {
         product.cover_id = "2".to_string();
         product.insert_or_update(&db).await.unwrap();
 
-
         let query = r#"query Products { products { pictures { id } } }"#;
 
         let result = request(query, &db).await;
 
         insta::assert_json_snapshot!(result.data.into_json().unwrap());
     }
-
 }
 
 #[cfg(test)]
