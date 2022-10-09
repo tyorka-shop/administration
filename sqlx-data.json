@@ -78,6 +78,24 @@
     },
     "query": "\n            SELECT `products`.* \n            FROM `products` \n            left join `entity_order` \n                on `entity_order`.`entity_id` = `products`.`id` and `entity_order`.`type` = \"shop\"\n            WHERE `products`.`show_in_shop` = 1\n            order by `entity_order`.`idx` asc\n            "
   },
+  "024dbd20ef821ab50e5550555b56f7a9bb98a95477d58d9d5719da08ac755d16": {
+    "describe": {
+      "columns": [
+        {
+          "name": "cnt",
+          "ordinal": 0,
+          "type_info": "Int"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n    select count(updated_at) as cnt \n    from (\n        select max(updated_at) as updated_at from products \n        union all\n        select max(updated_at) as updated_at from entity_order\n        union all\n        select max(updated_at) as updated_at from product_pictures\n    )\n    where updated_at > (select max(created_at) from build where status = 'DONE')\n    "
+  },
   "0dc6437c9e12dc7a0a3ef5a9d152c97c0847ef40fcf65a68e48772fbfcf75007": {
     "describe": {
       "columns": [
@@ -643,24 +661,6 @@
       }
     },
     "query": "delete from `pictures`"
-  },
-  "75bbf33d3c54c0bc2e14452ac0153a4b9974c9e3cc1c2bf0ad7c8dd5398b6518": {
-    "describe": {
-      "columns": [
-        {
-          "name": "cnt",
-          "ordinal": 0,
-          "type_info": "Int"
-        }
-      ],
-      "nullable": [
-        null
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "\n        select count(updated_at) as cnt \n        from (\n            select max(updated_at) as updated_at from products \n            union all\n            select max(updated_at) as updated_at from entity_order\n            union all\n            select max(updated_at) as updated_at from product_pictures\n        )\n        where updated_at > (select max(created_at) from build where status = 'DONE')\n        "
   },
   "863b25a6994c1dd60a416049521c2adfe0ecf76d5bf87f25d07e287d9e2764ef": {
     "describe": {
