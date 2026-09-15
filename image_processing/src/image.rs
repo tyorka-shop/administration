@@ -84,27 +84,31 @@ impl Image {
     }
 
     fn save_variants(&self, path: &str, sizes: &[u32], crop: &Crop) -> std::io::Result<()> {
-        sizes
-            .par_iter()
-            .map(move |height| {
-                let mut variant = self.clone();
+        let (w, h) = self.size();
+        let square_region = Region::from_size(w, h).crop(crop).map_err(|e| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("invalid crop for image {}: {:?}", self.id, e),
+            )
+        })?;
 
-                variant.resize(*height);
+        sizes.par_iter().try_for_each(|height| -> std::io::Result<()> {
+            let mut variant = self.clone();
+            variant.resize(*height);
+            variant.do_save(&format!("{path}/{}_{height}.{EXT}", &self.id))?;
 
-                variant.do_save(&format!("{path}/{}_{height}.{EXT}", &self.id)).unwrap();
+            let mut square_variant = self.clone();
+            square_variant.crop(&square_region).map_err(|e| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("invalid crop for image {}: {:?}", self.id, e),
+                )
+            })?;
+            square_variant.resize(*height);
+            square_variant.do_save(&format!("{path}/{}_square_{height}.{EXT}", &self.id))?;
 
-                let (w, h) = variant.size();
-
-                let region = Region::from_size(w, h).crop(crop).unwrap();
-
-                variant.crop(&region).unwrap();
-
-                variant.do_save(&format!("{path}/{}_square_{height}.{EXT}", &self.id))
-                    .unwrap();
-            })
-            .collect::<Vec<_>>();
-
-        Ok(())
+            Ok(())
+        })
     }
 
     pub fn save(self: &Self, path: &str, sizes: &Vec<u32>) -> std::io::Result<()> {
