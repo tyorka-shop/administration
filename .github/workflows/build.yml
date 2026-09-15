@@ -15,10 +15,9 @@ jobs:
     - name: Login to registry
       uses: docker/login-action@v4
       with:
-        registry: ghcr.io
-        username: tyorka-shop
-        password: ${{ secrets.PAT }}
-
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: docker build -t ghcr.io/tyorka-shop/administration:latest .
     
