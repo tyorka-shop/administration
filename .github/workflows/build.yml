@@ -2,6 +2,10 @@ name: build
 
 on: [push]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   prod:
     runs-on: ubuntu-latest
@@ -16,7 +20,7 @@ jobs:
       uses: docker/login-action@v4
       with:
         registry: ghcr.io
-        username: tyorka-shop
+        username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build
