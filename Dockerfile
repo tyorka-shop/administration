@@ -12,10 +12,9 @@ RUN cargo build --release --workspace \
   && rm -rf /build/target
 
 
-FROM gcr.io/distroless/cc-debian13:nonroot
+FROM debian:trixie-slim
 LABEL org.opencontainers.image.source https://github.com/tyorka-shop/administration
 COPY --from=builder /build/tyorka-admin /usr/local/bin/
 EXPOSE 3000
-USER nonroot:nonroot
 
 ENTRYPOINT ["/usr/local/bin/tyorka-admin"]
