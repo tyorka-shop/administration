@@ -12,7 +12,7 @@ RUN cargo build --release --workspace \
   && rm -rf /build/target
 
 
-FROM gcr.io/distroless/cc-debian10:nonroot
+FROM gcr.io/distroless/cc-debian13:nonroot
 LABEL org.opencontainers.image.source https://github.com/tyorka-shop/administration
 COPY --from=builder /build/tyorka-admin /usr/local/bin/
 EXPOSE 3000
