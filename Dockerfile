@@ -11,8 +11,8 @@ RUN cargo build --release --workspace \
   && mv /build/target/release/tyorka-admin /build/tyorka-admin \ 
   && rm -rf /build/target
 
-FROM debian:trixie-slim
-LABEL org.opencontainers.image.source https://github.com/tyorka-shop/administration
+FROM debian:bookworm-slim
+LABEL org.opencontainers.image.source=https://github.com/tyorka-shop/administration
 COPY --from=builder /build/tyorka-admin /usr/local/bin/
 EXPOSE 3000
 

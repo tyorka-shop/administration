@@ -146,21 +146,7 @@ impl Mutations {
     async fn publish(&self, ctx: &Context<'_>) -> Result<Build> {
         let db = ctx.data::<SqlitePool>().unwrap();
         let builder = ctx.data::<Builder>().unwrap();
-        let publication_status = match ctx.data::<PublicationStatus>() {
-            Ok(publication_status) => Some(publication_status.clone()),
-            _ => None,
-        };
-
-        let build = builder
-            .build(&db, move || {
-                match publication_status {
-                    Some(publication_status) => publication_status.set_published(),
-                    _ => {}
-                };
-            })
-            .unwrap();
-
-        Ok(build.into())
+        Ok(builder.build(db).await?.into())
     }
 }
 

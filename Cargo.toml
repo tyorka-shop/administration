@@ -8,7 +8,7 @@ async-graphql = "4.0.13"
 async-graphql-poem = "4.0.13"
 async-trait = "0.1.57"
 cache = {git = "https://github.com/tyorka-shop/cache.git"}
-chrono = "0.4.22"
+chrono = { version = "0.4.22", features = ["serde"] }
 config = { path = "./config" }
 constant_time_eq = "0.2.4"
 dominant_color = "0.3.0"
@@ -29,8 +29,7 @@ serde_json = "1.0.85"
 session_service_grpc = { git = "https://github.com/tyorka-shop/session-service-grpc.git" }
 sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "sqlite", "offline", "chrono" ] }
 tokio = "1.20.1"
-lazy_static = "1.4.0"
-subprocess = "0.2.9"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 strip-ansi-escapes = "0.1.1"
 insta_sync = {path = "./insta_sync"}
 async-stream = "0.3.3"

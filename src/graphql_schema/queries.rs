@@ -1,7 +1,7 @@
 use crate::{
-    builder::Builder,
+    builder::{Builder, BuildState},
     graphql_types::{BlogPost, Build, Picture, Product, User},
-    guard::{Role, RoleData}, publication_status::{PublicationStatus, PublicationStatusTrait},
+    guard::{Role, RoleData}, publication_status::PublicationStatus,
 };
 use async_graphql::{Context, Object, Result, ID};
 use sqlx::SqlitePool;
@@ -103,74 +103,38 @@ impl Queries {
 
     #[graphql(guard = "RoleData::admin()")]
     async fn current_build(&self, ctx: &Context<'_>) -> Result<Option<Build>> {
-        let db = ctx.data::<SqlitePool>().unwrap();
-        let builder = ctx.data::<Builder>().unwrap();
-        let id = builder.current_build();
-        match id {
-            Some(id) => {
-                let build = entity::Build::get_by_id(db, &id).await.unwrap();
-                Ok(Some(build.into()))
-            }
-            None => Ok(None),
-        }
+        Ok(ctx.data::<Builder>()?.current_build().await?.map(Build::from))
     }
 
     #[graphql(guard = "RoleData::admin()")]
     async fn publications(&self, ctx: &Context<'_>) -> Result<Vec<Build>> {
-        let db = ctx.data::<SqlitePool>().unwrap();
-
-        let builds = sqlx::query_as!(
-            entity::Build,
-            "SELECT * FROM `build` order by `created_at` desc"
-        )
-        .fetch_all(db)
-        .await
-        .unwrap()
-        .into_iter()
-        .map(Build::from)
-        .collect();
-        Ok(builds)
+        let builds = ctx.data::<Builder>()?.publications().await?;
+        Ok(builds.into_iter().map(Build::from).collect())
     }
 
     #[graphql(guard = "RoleData::admin()")]
     async fn publication(&self, ctx: &Context<'_>, id: ID) -> Result<Option<Build>> {
-        let db = ctx.data::<SqlitePool>().unwrap();
-
-        let build = entity::Build::get_by_id(&db, &id.to_string()).await;
-        match build {
-            Ok(build) => Ok(Some(build.into())),
-            Err(_) => Ok(None),
-        }
+        let Ok(id) = id.as_str().parse() else {
+            return Ok(None);
+        };
+        Ok(ctx.data::<Builder>()?.publication(id).await?.map(Build::from))
     }
 
     #[graphql(guard = "RoleData::admin()")]
     async fn is_draft(&self, ctx: &Context<'_>) -> Result<bool> {
-        let db = ctx.data::<SqlitePool>().unwrap();
-        Ok(PublicationStatus::is_draft(&db).await.unwrap())
+        let db = ctx.data::<SqlitePool>()?;
+        let builder = ctx.data::<Builder>()?;
+        Ok(PublicationStatus::is_draft(db, builder).await?)
     }
 
     #[graphql(guard = "RoleData::admin()")]
     async fn publication_duration(&self, ctx: &Context<'_>) -> Result<i32> {
-        let db = ctx.data::<SqlitePool>().unwrap();
-        match sqlx::query!("select `created_at`, `updated_at` from `build` where `status` = 'DONE'")
-            .fetch_all(db)
-            .await
-        {
-            Ok(rows) => {
-                let len = rows.len() as i64;
-                if len == 0 {
-                    return Ok(60_000);
-                }
-                let sum: i64 = rows
-                    .into_iter()
-                    .map(|row| {
-                        row.updated_at.timestamp_millis() - row.created_at.timestamp_millis()
-                    })
-                    .sum();
-                Ok((sum / len as i64) as i32)
-            }
-            Err(_) => Ok(60_000),
-        }
+        let builds = ctx.data::<Builder>()?.publications().await?;
+        let (total, count) = builds.into_iter()
+            .filter(|build| matches!(build.state, BuildState::Succeeded))
+            .filter_map(|build| Some((build.finished_at? - build.started_at).num_milliseconds()))
+            .fold((0, 0), |(total, count), duration| (total + duration, count + 1));
+        Ok(total.checked_div(count).unwrap_or(60_000).min(i32::MAX as i64) as i32)
     }
 }
 

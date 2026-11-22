@@ -13,7 +13,11 @@ pub struct Config {
     pub cors_allowed_origins: Vec<String>,
     pub images_folder: String,
     pub public_site_folder: String,
-    pub insta: Option<InstaConfig>
+    #[serde(default = "default_builder_url")]
+    pub builder_url: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub builder_token: Option<String>,
+    pub insta: Option<InstaConfig>,
 }
 
 impl Default for Config {
@@ -25,11 +29,24 @@ impl Default for Config {
             database_uri: "sqlite:./store/db.sqlite".into(),
             images_folder: "./store/images".into(),
             public_site_folder: "/public".into(),
-            insta: None
+            builder_url: default_builder_url(),
+            builder_token: None,
+            insta: None,
         }
     }
 }
 
+fn default_builder_url() -> String {
+    "http://127.0.0.1:3000".into()
+}
+
 pub fn load(name: &str) -> Config {
-    confy::load::<Config>(name).unwrap()
+    let mut config = confy::load::<Config>(name).unwrap();
+    if let Ok(url) = std::env::var("BUILDER_URL") {
+        config.builder_url = url;
+    }
+    if let Ok(token) = std::env::var("BUILDER_TOKEN") {
+        config.builder_token = Some(token);
+    }
+    config
 }

@@ -25,11 +25,7 @@ pub async fn make_server(
     let addr = SocketAddr::from_str(&cfg.addr).unwrap();
 
     let extractor = RoleExctractor::new(&cfg.secret, "http://localhost:50051".into());
-    let builder = crate::builder::Builder {
-        public_site_folder: cfg.public_site_folder.clone(),
-        images_folder: cfg.images_folder.clone(),
-        insta_cfg: cfg.insta.clone(),
-    };
+    let builder = crate::builder::Builder::new(&cfg);
 
     let publication_status = PublicationStatus::new();
 

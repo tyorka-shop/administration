@@ -2,7 +2,7 @@ use async_graphql::{futures_util::Stream, Context};
 use sqlx::SqlitePool;
 use std::time::Duration;
 
-use crate::publication_status::{PublicationStatus, PublicationStatusTrait};
+use crate::{builder::Builder, publication_status::{PublicationStatus, PublicationStatusTrait}};
 
 pub struct Subscription;
 
@@ -22,7 +22,7 @@ impl Subscription {
     async fn is_draft<'a>(&self, ctx: &Context<'a>) -> impl Stream<Item = bool> + 'a {
         let db = ctx.data::<SqlitePool>().unwrap();
         let publication_status = ctx.data::<PublicationStatus>().unwrap();
-        let initial = PublicationStatus::is_draft(&db).await.unwrap();
+        let initial = PublicationStatus::is_draft(db, ctx.data::<Builder>().unwrap()).await.unwrap();
         async_stream::stream! {
             yield initial;
             loop {
